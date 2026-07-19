@@ -76,8 +76,9 @@ function formatPercent(value: number) {
 
 async function getIPOs(): Promise<IPO[]> {
   try {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const response = await fetch(
-      "http://localhost:3000/api/ipos",
+      `${baseUrl}/api/ipos`,
       {
         cache: "no-store",
       }
