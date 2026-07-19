@@ -1,0 +1,129 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type IPO = {
+  name: string;
+  gmp: string;
+  priceBand: string;
+  listingGain: string;
+};
+
+function createSlug(name: string) {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export default function GMPPage() {
+  const [ipos, setIpos] = useState<IPO[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/ipos", {
+          cache: "no-store",
+        });
+
+        const data = await res.json();
+
+        setIpos(Array.isArray(data) ? data : []);
+      } catch {
+        setIpos([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, []);
+
+  return (
+    <main className="min-h-screen bg-slate-950 px-5 py-12 text-white">
+      <div className="mx-auto max-w-[1200px]">
+
+        <Link href="/" className="font-bold text-green-400">
+          ← Back to Home
+        </Link>
+
+        <h1 className="mt-6 text-4xl font-black">
+          IPO <span className="text-green-400">GMP</span>
+        </h1>
+
+        <p className="mt-3 text-slate-400">
+          Live grey market premium tracker for all IPOs.
+        </p>
+
+        {loading ? (
+          <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center">
+            Loading GMP data...
+          </div>
+        ) : (
+          <div className="mt-8 overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
+
+            <div className="overflow-x-auto">
+
+              <table className="w-full min-w-[700px]">
+
+                <thead className="bg-slate-950">
+                  <tr className="border-b border-slate-700">
+                    <th className="px-6 py-5 text-left text-xs font-black uppercase text-slate-500">
+                      IPO NAME
+                    </th>
+                    <th className="px-6 py-5 text-left text-xs font-black uppercase text-slate-500">
+                      GMP
+                    </th>
+                    <th className="px-6 py-5 text-left text-xs font-black uppercase text-slate-500">
+                      PRICE BAND
+                    </th>
+                    <th className="px-6 py-5 text-left text-xs font-black uppercase text-slate-500">
+                      EST. GAIN
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {ipos.map((ipo) => (
+                    <Link
+                      key={ipo.name}
+                      href={`/ipo/${createSlug(ipo.name)}`}
+                      className="contents"
+                    >
+                      <tr className="cursor-pointer border-b border-slate-800 transition hover:bg-slate-800/70">
+
+                        <td className="px-6 py-6 font-black">
+                          {ipo.name}
+                        </td>
+
+                        <td className="px-6 py-6 text-xl font-black text-green-400">
+                          {ipo.gmp || "--"}
+                        </td>
+
+                        <td className="px-6 py-6 font-bold whitespace-nowrap">
+                          {ipo.priceBand}
+                        </td>
+
+                        <td className="px-6 py-6 font-bold text-green-400">
+                          {ipo.listingGain || "--"}
+                        </td>
+
+                      </tr>
+                    </Link>
+                  ))}
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+        )}
+
+      </div>
+    </main>
+  );
+}
