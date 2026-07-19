@@ -32,6 +32,7 @@ export async function GET() {
     const ipos = await db
       .collection("ipos")
       .find({})
+      .sort({ _id: -1 })
       .project({ _id: 0 })
       .toArray();
 
