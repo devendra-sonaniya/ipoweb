@@ -22,7 +22,6 @@ type IPOForm = {
   retailSubscription: string;
   employeeSubscription: string;
   closeDate: string;
-  score: string;
   issueSize: string;
   lotSize: string;
   minimumInvestment: string;
@@ -31,12 +30,55 @@ type IPOForm = {
   listingDate: string;
   exchange: string;
   registrar: string;
-  recommendation: string;
-  listingGainView: string;
-  riskLevel: string;
-  verdictReason: string;
-  overview: string;
   financials: string;
+  faceValue: string;
+  drhpLink: string;
+  rhpLink: string;
+retailMinLot: string;
+retailMinShares: string;
+retailMinAmount: string;
+
+retailMaxLot: string;
+retailMaxShares: string;
+retailMaxAmount: string;
+
+sHniLot: string;
+sHniShares: string;
+sHniAmount: string;
+
+bHniLot: string;
+bHniShares: string;
+bHniAmount: string;
+
+qibReservation: string;
+niiReservation: string;
+retailReservation: string;
+employeeReservation: string;
+shareholderReservation: string;
+
+prePromoterHolding: string;
+postPromoterHolding: string;
+anchorAllocation: string;
+anchorDetails: string;
+
+revenueFY2024: string;
+revenueFY2025: string;
+revenueFY2026: string;
+
+profitFY2024: string;
+profitFY2025: string;
+profitFY2026: string;
+
+marketCapPostIPO: string;
+bookValue: string;
+eps: string;
+dilutedEPS: string;
+peRatio: string;
+industryPE: string;
+pbRatio: string;
+debtToEquity: string;
+totalAssets: string;
+ipoValuation: string;
   gmpTrend: string;
   strengths: string;
   risks: string;
@@ -48,6 +90,43 @@ revenueGrowth: string;
 patGrowth: string;
 debtRisk: string;
 valuation: string;
+peerRevenue: string;
+peerPAT: string;
+peerEPS: string;
+peerPE: string;
+peerMarketCap: string;
+peerROE: string;
+peerDebtEquity: string;
+
+peer1Name: string;
+peer1Revenue: string;
+peer1PAT: string;
+peer1EPS: string;
+peer1PE: string;
+peer1MarketCap: string;
+peer1ROE: string;
+peer1DebtEquity: string;
+
+peer2Name: string;
+peer2Revenue: string;
+peer2PAT: string;
+peer2EPS: string;
+peer2PE: string;
+peer2MarketCap: string;
+peer2ROE: string;
+peer2DebtEquity: string;
+
+peer3Name: string;
+peer3Revenue: string;
+peer3PAT: string;
+peer3EPS: string;
+peer3PE: string;
+peer3MarketCap: string;
+peer3ROE: string;
+peer3DebtEquity: string;
+companyOverview: string;
+businessModel: string;
+objectsOfIssue: string;
 businessRisk: string;
   gmpHistory: GMPHistoryItem[];
 };
@@ -66,21 +145,64 @@ const initialForm: IPOForm = {
   retailSubscription: "",
   employeeSubscription: "",
   closeDate: "",
-  score: "",
   issueSize: "",
   lotSize: "",
   minimumInvestment: "",
   openDate: "",
   allotmentDate: "",
   listingDate: "",
+  drhpLink: "",
+  rhpLink: "",
   exchange: "",
   registrar: "",
-  recommendation: "WATCH",
-  listingGainView: "NEUTRAL",
-  riskLevel: "MEDIUM",
-  verdictReason: "",
-  overview: "",
   financials: "",
+  faceValue: "",
+
+retailMinLot: "",
+retailMinShares: "",
+retailMinAmount: "",
+
+retailMaxLot: "",
+retailMaxShares: "",
+retailMaxAmount: "",
+
+sHniLot: "",
+sHniShares: "",
+sHniAmount: "",
+
+bHniLot: "",
+bHniShares: "",
+bHniAmount: "",
+
+qibReservation: "",
+niiReservation: "",
+retailReservation: "",
+employeeReservation: "",
+shareholderReservation: "",
+
+prePromoterHolding: "",
+postPromoterHolding: "",
+anchorAllocation: "",
+anchorDetails: "",
+
+revenueFY2024: "",
+revenueFY2025: "",
+revenueFY2026: "",
+
+profitFY2024: "",
+profitFY2025: "",
+profitFY2026: "",
+
+marketCapPostIPO: "",
+bookValue: "",
+eps: "",
+dilutedEPS: "",
+peRatio: "",
+industryPE: "",
+pbRatio: "",
+debtToEquity: "",
+totalAssets: "",
+ipoValuation: "",
   gmpTrend: "",
   strengths: "",
   risks: "",
@@ -92,6 +214,9 @@ revenueGrowth: "",
 patGrowth: "",
 debtRisk: "",
 valuation: "",
+companyOverview: "",
+businessModel: "",
+objectsOfIssue: "",
 businessRisk: "",
   gmpHistory: [],
 };
@@ -247,14 +372,9 @@ export default function AdminPage() {
             ).toFixed(1)}%`
           : form.listingGain;
 
-      const intelligence = calculateIPOIntelligence({
-  ...form,
-  gmp: latestHistoryGMP,
-});
 
 const formToSave: IPOForm = {
   ...form,
-  ...intelligence,
   gmp: latestHistoryGMP,
   listingGain: autoListingGain,
 };
@@ -556,16 +676,7 @@ const formToSave: IPOForm = {
             />
           </label>
 
-          <label className="font-bold">
-            Opportunity Score
-            <input
-              value={form.score}
-              onChange={(event) =>
-                updateField("score", event.target.value)
-              }
-              className={inputClass}
-            />
-          </label>
+          
 
           <label className="font-bold">
             Issue Size
@@ -679,6 +790,17 @@ const formToSave: IPOForm = {
             />
           </label>
 
+          <label className="font-bold">
+  Face Value
+  <input
+    value={form.faceValue}
+    onChange={(event) =>
+      updateField("faceValue", event.target.value)
+    }
+    placeholder="₹10 per share"
+    className={inputClass}
+  />
+</label>
           <div className="mt-4 border-t border-slate-700 pt-6 md:col-span-2">
             <h2 className="text-2xl font-black text-green-400">
               GMP History Tracker
@@ -801,109 +923,657 @@ const formToSave: IPOForm = {
             </div>
           )}
 
-          <div className="mt-4 border-t border-slate-700 pt-6 md:col-span-2">
-            <h2 className="text-2xl font-black text-green-400">
-              IPO Verdict System
-            </h2>
-          </div>
-
-          <label className="font-bold">
-            Recommendation
-            <select
-              value={form.recommendation}
-              onChange={(event) =>
-                updateField(
-                  "recommendation",
-                  event.target.value
-                )
-              }
-              className={inputClass}
-            >
-              <option value="APPLY">APPLY</option>
-              <option value="WATCH">WATCH</option>
-              <option value="AVOID">AVOID</option>
-            </select>
-          </label>
-
-          <label className="font-bold">
-            Listing Gain View
-            <select
-              value={form.listingGainView}
-              onChange={(event) =>
-                updateField(
-                  "listingGainView",
-                  event.target.value
-                )
-              }
-              className={inputClass}
-            >
-              <option value="POSITIVE">POSITIVE</option>
-              <option value="NEUTRAL">NEUTRAL</option>
-              <option value="NEGATIVE">NEGATIVE</option>
-            </select>
-          </label>
-
-          <label className="font-bold">
-            Risk Level
-            <select
-              value={form.riskLevel}
-              onChange={(event) =>
-                updateField(
-                  "riskLevel",
-                  event.target.value
-                )
-              }
-              className={inputClass}
-            >
-              <option value="LOW">LOW</option>
-              <option value="MEDIUM">MEDIUM</option>
-              <option value="HIGH">HIGH</option>
-            </select>
-          </label>
-
-          <label className="font-bold md:col-span-2">
-            Final Verdict Reason
-            <textarea
-              value={form.verdictReason}
-              onChange={(event) =>
-                updateField(
-                  "verdictReason",
-                  event.target.value
-                )
-              }
-              rows={5}
-              className={inputClass}
-            />
-          </label>
-
-          <label className="font-bold md:col-span-2">
-            Company Overview
-            <textarea
-              value={form.overview}
-              onChange={(event) =>
-                updateField(
-                  "overview",
-                  event.target.value
-                )
-              }
-              rows={5}
-              className={inputClass}
-            />
-          </label>
-
           <label className="font-bold md:col-span-2">
             Financial Performance
-            <textarea
-              value={form.financials}
-              onChange={(event) =>
-                updateField(
-                  "financials",
-                  event.target.value
-                )
-              }
+            <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
+  <h2 className="text-2xl font-black text-green-400">
+    Financial Performance
+  </h2>
+</div>
+
+<label className="font-bold">
+  Revenue FY2024
+  <input
+    value={form.revenueFY2024}
+    onChange={(e) => updateField("revenueFY2024", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Revenue FY2025
+  <input
+    value={form.revenueFY2025}
+    onChange={(e) => updateField("revenueFY2025", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Revenue FY2026
+  <input
+    value={form.revenueFY2026}
+    onChange={(e) => updateField("revenueFY2026", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  PAT FY2024
+  <input
+    value={form.profitFY2024}
+    onChange={(e) => updateField("profitFY2024", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  PAT FY2025
+  <input
+    value={form.profitFY2025}
+    onChange={(e) => updateField("profitFY2025", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  PAT FY2026
+  <input
+    value={form.profitFY2026}
+    onChange={(e) => updateField("profitFY2026", e.target.value)}
+    className={inputClass}
+  />
+</label>
+       
+             <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
+  <h2 className="text-2xl font-black text-green-400">
+    IPO Market Lot
+  </h2>
+</div>
+
+<label className="font-bold">
+  Retail Min Lot
+  <input
+    value={form.retailMinLot}
+    onChange={(e) => updateField("retailMinLot", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Retail Min Shares
+  <input
+    value={form.retailMinShares}
+    onChange={(e) => updateField("retailMinShares", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Retail Min Amount
+  <input
+    value={form.retailMinAmount}
+    onChange={(e) => updateField("retailMinAmount", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Retail Max Lot
+  <input
+    value={form.retailMaxLot}
+    onChange={(e) => updateField("retailMaxLot", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Retail Max Shares
+  <input
+    value={form.retailMaxShares}
+    onChange={(e) => updateField("retailMaxShares", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Retail Max Amount
+  <input
+    value={form.retailMaxAmount}
+    onChange={(e) => updateField("retailMaxAmount", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  sHNI Lot
+  <input
+    value={form.sHniLot}
+    onChange={(e) => updateField("sHniLot", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  sHNI Shares
+  <input
+    value={form.sHniShares}
+    onChange={(e) => updateField("sHniShares", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  sHNI Amount
+  <input
+    value={form.sHniAmount}
+    onChange={(e) => updateField("sHniAmount", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  bHNI Lot
+  <input
+    value={form.bHniLot}
+    onChange={(e) => updateField("bHniLot", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  bHNI Shares
+  <input
+    value={form.bHniShares}
+    onChange={(e) => updateField("bHniShares", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  bHNI Amount
+  <input
+    value={form.bHniAmount}
+    onChange={(e) => updateField("bHniAmount", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+              <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
+  <h2 className="text-2xl font-black text-green-400">
+    IPO Reservation
+  </h2>
+</div>
+
+<label className="font-bold">
+  QIB Reservation
+  <input
+    value={form.qibReservation}
+    onChange={(e) => updateField("qibReservation", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  NII Reservation
+  <input
+    value={form.niiReservation}
+    onChange={(e) => updateField("niiReservation", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Retail Reservation
+  <input
+    value={form.retailReservation}
+    onChange={(e) => updateField("retailReservation", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Employee Reservation
+  <input
+    value={form.employeeReservation}
+    onChange={(e) => updateField("employeeReservation", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Shareholder Reservation
+  <input
+    value={form.shareholderReservation}
+    onChange={(e) => updateField("shareholderReservation", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+             <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
+  <h2 className="text-2xl font-black text-green-400">
+    Promoter Holding & Anchor Investors
+  </h2>
+</div>
+
+<label className="font-bold">
+  Pre IPO Promoter Holding
+  <input
+    value={form.prePromoterHolding}
+    onChange={(e) => updateField("prePromoterHolding", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Post IPO Promoter Holding
+  <input
+    value={form.postPromoterHolding}
+    onChange={(e) => updateField("postPromoterHolding", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Anchor Allocation
+  <input
+    value={form.anchorAllocation}
+    onChange={(e) => updateField("anchorAllocation", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold md:col-span-2">
+  Anchor Details
+  <textarea
+    rows={4}
+    value={form.anchorDetails}
+    onChange={(e) => updateField("anchorDetails", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+             <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
+  <h2 className="text-2xl font-black text-green-400">
+    IPO Fundamentals
+  </h2>
+</div>
+
+        <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
+  <h2 className="text-2xl font-black text-green-400">
+    Peer Comparison
+  </h2>
+</div>
+
+<label className="font-bold">
+  Market Cap (Post IPO)
+  <input
+    value={form.marketCapPostIPO}
+    onChange={(e) => updateField("marketCapPostIPO", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Book Value
+  <input
+    value={form.bookValue}
+    onChange={(e) => updateField("bookValue", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  EPS
+  <input
+    value={form.eps}
+    onChange={(e) => updateField("eps", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Diluted EPS
+  <input
+    value={form.dilutedEPS}
+    onChange={(e) => updateField("dilutedEPS", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  P/E Ratio
+  <input
+    value={form.peRatio}
+    onChange={(e) => updateField("peRatio", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Industry P/E
+  <input
+    value={form.industryPE}
+    onChange={(e) => updateField("industryPE", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  P/B Ratio
+  <input
+    value={form.pbRatio}
+    onChange={(e) => updateField("pbRatio", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Debt / Equity
+  <input
+    value={form.debtToEquity}
+    onChange={(e) => updateField("debtToEquity", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Total Assets
+  <input
+    value={form.totalAssets}
+    onChange={(e) => updateField("totalAssets", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  IPO Valuation
+  <input
+    value={form.ipoValuation}
+    onChange={(e) => updateField("ipoValuation", e.target.value)}
+    className={inputClass}
+  />
+</label>
+ 
+             <label className="font-bold">
+  IPO Revenue
+  <input
+    value={form.peerRevenue}
+    onChange={(e) => updateField("peerRevenue", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  IPO PAT
+  <input
+    value={form.peerPAT}
+    onChange={(e) => updateField("peerPAT", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  IPO EPS
+  <input
+    value={form.peerEPS}
+    onChange={(e) => updateField("peerEPS", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  IPO P/E
+  <input
+    value={form.peerPE}
+    onChange={(e) => updateField("peerPE", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+             <label className="font-bold">
+  Peer 1 Name
+  <input
+    value={form.peer1Name}
+    onChange={(e) => updateField("peer1Name", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 1 Revenue
+  <input
+    value={form.peer1Revenue}
+    onChange={(e) => updateField("peer1Revenue", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 1 PAT
+  <input
+    value={form.peer1PAT}
+    onChange={(e) => updateField("peer1PAT", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 1 P/E
+  <input
+    value={form.peer1PE}
+    onChange={(e) => updateField("peer1PE", e.target.value)}
+    className={inputClass}
+  />
+</label>
+             <label className="font-bold">
+  Peer 2 Name
+  <input
+    value={form.peer2Name}
+    onChange={(e) => updateField("peer2Name", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 2 Revenue
+  <input
+    value={form.peer2Revenue}
+    onChange={(e) => updateField("peer2Revenue", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 2 PAT
+  <input
+    value={form.peer2PAT}
+    onChange={(e) => updateField("peer2PAT", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 2 EPS
+  <input
+    value={form.peer2EPS}
+    onChange={(e) => updateField("peer2EPS", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 2 P/E
+  <input
+    value={form.peer2PE}
+    onChange={(e) => updateField("peer2PE", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 2 Market Cap
+  <input
+    value={form.peer2MarketCap}
+    onChange={(e) => updateField("peer2MarketCap", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 2 ROE
+  <input
+    value={form.peer2ROE}
+    onChange={(e) => updateField("peer2ROE", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 2 Debt/Equity
+  <input
+    value={form.peer2DebtEquity}
+    onChange={(e) => updateField("peer2DebtEquity", e.target.value)}
+    className={inputClass}
+  />
+</label>
+              <label className="font-bold">
+  Peer 3 Name
+  <input
+    value={form.peer3Name}
+    onChange={(e) => updateField("peer3Name", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 3 Revenue
+  <input
+    value={form.peer3Revenue}
+    onChange={(e) => updateField("peer3Revenue", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 3 PAT
+  <input
+    value={form.peer3PAT}
+    onChange={(e) => updateField("peer3PAT", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 3 EPS
+  <input
+    value={form.peer3EPS}
+    onChange={(e) => updateField("peer3EPS", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 3 P/E
+  <input
+    value={form.peer3PE}
+    onChange={(e) => updateField("peer3PE", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 3 Market Cap
+  <input
+    value={form.peer3MarketCap}
+    onChange={(e) => updateField("peer3MarketCap", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 3 ROE
+  <input
+    value={form.peer3ROE}
+    onChange={(e) => updateField("peer3ROE", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 3 Debt/Equity
+  <input
+    value={form.peer3DebtEquity}
+    onChange={(e) => updateField("peer3DebtEquity", e.target.value)}
+    className={inputClass}
+  />
+</label>     
+              <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
+  <h2 className="text-2xl font-black text-green-400">
+    Company Overview
+  </h2>
+</div>
+
+<label className="font-bold md:col-span-2">
+  Company Overview
+  <textarea
+    rows={6}
+    value={form.companyOverview}
+    onChange={(e) => updateField("companyOverview", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold md:col-span-2">
+  Business Model
+  <textarea
+    rows={5}
+    value={form.businessModel}
+    onChange={(e) => updateField("businessModel", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold md:col-span-2">
+  Objects of the Issue
+  <textarea
+    rows={5}
+    value={form.objectsOfIssue}
+    onChange={(e) => updateField("objectsOfIssue", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+             <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
+  <h2 className="text-2xl font-black text-green-400">
+    DRHP & RHP Documents
+  </h2>
+</div>
+
+<label className="font-bold md:col-span-2">
+  DRHP Link
+  <input
+    type="url"
+    value={form.drhpLink}
+    onChange={(e) => updateField("drhpLink", e.target.value)}
+    className={inputClass}
+    placeholder="https://..."
+  />
+</label>
+
+<label className="font-bold md:col-span-2">
+  RHP Link
+  <input
+    type="url"
+    value={form.rhpLink}
+    onChange={(e) => updateField("rhpLink", e.target.value)}
+    className={inputClass}
+    placeholder="https://..."
+  />
+</label>
               rows={5}
               className={inputClass}
-            />
+            /
           </label>
 <label className="font-bold">
   Revenue Growth
@@ -1006,17 +1676,7 @@ const formToSave: IPOForm = {
             />
           </label>
 
-          <label className="font-bold md:col-span-2">
-            Risks
-            <textarea
-              value={form.risks}
-              onChange={(event) =>
-                updateField("risks", event.target.value)
-              }
-              rows={5}
-              className={inputClass}
-            />
-          </label>
+          
 
           <div className="flex items-end gap-3 md:col-span-2">
             <button
