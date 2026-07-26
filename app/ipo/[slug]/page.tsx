@@ -55,9 +55,19 @@ type IPO = {
   issueSize?: string;
   exchange?: string;
   registrar?: string;
-  drhp: string;
-  rhp: string;
-  
+  drhpLink: string;
+  rhpLink: string;
+  issueType: string;
+freshIssue: string;
+offerForSale: string;
+listingAt: string;
+leadManagers: string;
+marketMaker: string;
+employeeDiscount: string;
+retailDiscount: string;
+refundDate: string;
+dematCreditDate: string;
+listingExchange: string;
   listingGainView?: string;
   riskLevel?: string;
   prePromoterHolding: string;
@@ -472,6 +482,115 @@ export default async function IPOPage({ params }: Props) {
 
 </div>
 
+            {/* IPO Details */}
+
+<section className="mt-8 rounded-3xl border border-slate-800 bg-slate-950 p-8">
+  <h2 className="mb-6 text-3xl font-black text-green-400">
+    IPO Details
+  </h2>
+
+  <div className="overflow-hidden rounded-2xl border border-slate-800">
+    <table className="w-full">
+      <tbody>
+
+        <tr className="border-b border-slate-800">
+          <td className="w-1/3 bg-slate-900 px-5 py-4 font-semibold">
+            IPO Date
+          </td>
+          <td className="px-5 py-4">
+            {ipo.openDate} - {ipo.closeDate}
+          </td>
+        </tr>
+
+        <tr className="border-b border-slate-800">
+          <td className="bg-slate-900 px-5 py-4 font-semibold">
+            Price Band
+          </td>
+          <td className="px-5 py-4">
+            {ipo.priceBand}
+          </td>
+        </tr>
+
+        <tr className="border-b border-slate-800">
+          <td className="bg-slate-900 px-5 py-4 font-semibold">
+            Total Issue
+          </td>
+          <td className="px-5 py-4">
+            {ipo.issueSize}
+          </td>
+        </tr>
+
+        <tr className="border-b border-slate-800">
+          <td className="bg-slate-900 px-5 py-4 font-semibold">
+            Allotment Date
+          </td>
+          <td className="px-5 py-4">
+            {ipo.allotmentDate}
+          </td>
+        </tr>
+
+        <tr className="border-b border-slate-800">
+          <td className="bg-slate-900 px-5 py-4 font-semibold">
+            Listing Date
+          </td>
+          <td className="px-5 py-4">
+            {ipo.listingDate}
+          </td>
+        </tr>
+          <tr className="border-b border-slate-800">
+  <td className="bg-slate-900 px-5 py-4 font-semibold">
+    Listing Exchange
+  </td>
+  <td className="px-5 py-4">
+    {ipo.listingExchange || "-"}
+  </td>
+</tr>
+        <tr className="border-b border-slate-800">
+          <td className="bg-slate-900 px-5 py-4 font-semibold">
+            Listing Exchange
+          </td>
+          <td className="px-5 py-4">
+            {ipo.listingExchange}
+          </td>
+        </tr>
+
+        <tr className="border-b border-slate-800">
+          <td className="bg-slate-900 px-5 py-4 font-semibold">
+            DRHP
+          </td>
+          <td className="px-5 py-4">
+            <a
+              href={ipo.drhpLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-green-400 hover:underline"
+            >
+              View DRHP
+            </a>
+          </td>
+        </tr>
+
+        <tr>
+          <td className="bg-slate-900 px-5 py-4 font-semibold">
+            RHP
+          </td>
+          <td className="px-5 py-4">
+            <a
+              href={ipo.rhpLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-green-400 hover:underline"
+            >
+              View RHP
+            </a>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</section>
+            
           <section className="mt-10 rounded-3xl border border-slate-800 bg-slate-950 p-7">
             <div className="flex flex-wrap justify-between gap-4">
               <div>
@@ -562,7 +681,8 @@ export default async function IPOPage({ params }: Props) {
               </div>
             )}
           </section>
-
+         
+        
              {/* Financial Performance */}
 <section className="rounded-2xl border border-gray-800 bg-[#0f172a] p-6 mt-8">
   <h2 className="text-2xl font-bold text-white mb-6">
@@ -784,9 +904,9 @@ export default async function IPOPage({ params }: Props) {
 
   <div className="flex flex-wrap gap-4">
 
-    {ipo.drhp && (
-      <a
-        href={ipo.drhp}
+    {ipo.drhpLink && (
+  <a
+    href={ipo.drhpLink}
         target="_blank"
         rel="noopener noreferrer"
         className="rounded-xl bg-green-600 px-6 py-3 font-bold text-white hover:bg-green-700 transition"
@@ -795,9 +915,9 @@ export default async function IPOPage({ params }: Props) {
       </a>
     )}
 
-    {ipo.rhp && (
-      <a
-        href={ipo.rhp}
+    {ipo.rhpLink && (
+  <a
+    href={ipo.rhpLink}
         target="_blank"
         rel="noopener noreferrer"
         className="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 transition"

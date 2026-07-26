@@ -28,7 +28,7 @@ type IPOForm = {
   openDate: string;
   allotmentDate: string;
   listingDate: string;
-  exchange: string;
+  listingExchange: string;
   registrar: string;
   financials: string;
   faceValue: string;
@@ -68,7 +68,17 @@ revenueFY2026: string;
 profitFY2024: string;
 profitFY2025: string;
 profitFY2026: string;
-
+issueType: string;
+freshIssue: string;
+offerForSale: string;
+listingAt: string;
+listingPrice: string;
+leadManagers: string;
+marketMaker: string;
+employeeDiscount: string;
+retailDiscount: string;
+refundDate: string;
+dematCreditDate: string;
 marketCapPostIPO: string;
 bookValue: string;
 eps: string;
@@ -139,6 +149,7 @@ const initialForm: IPOForm = {
   priceBand: "",
   gmp: "",
   listingGain: "",
+  listingPrice: "",
   subscription: "",
   qibSubscription: "",
   niiSubscription: "",
@@ -153,7 +164,7 @@ const initialForm: IPOForm = {
   listingDate: "",
   drhpLink: "",
   rhpLink: "",
-  exchange: "",
+  listingExchange: "",
   registrar: "",
   financials: "",
   faceValue: "",
@@ -192,7 +203,16 @@ revenueFY2026: "",
 profitFY2024: "",
 profitFY2025: "",
 profitFY2026: "",
-
+issueType: "",
+freshIssue: "",
+offerForSale: "",
+listingAt: "",
+leadManagers: "",
+marketMaker: "",
+employeeDiscount: "",
+retailDiscount: "",
+refundDate: "",
+dematCreditDate: "",
 marketCapPostIPO: "",
 bookValue: "",
 eps: "",
@@ -799,13 +819,14 @@ const formToSave: IPOForm = {
           <label className="font-bold">
             Exchange
             <input
-              value={form.exchange}
-              onChange={(event) =>
-                updateField(
-                  "exchange",
-                  event.target.value
-                )
-              }
+              value={form.listingExchange}
+
+onChange={(event) =>
+  updateField(
+    "listingExchange",
+    event.target.value
+  )
+}
               className={inputClass}
             />
           </label>
@@ -823,7 +844,16 @@ const formToSave: IPOForm = {
               className={inputClass}
             />
           </label>
-
+          
+          <label className="font-bold">
+  Listing Exchange
+  <input
+    value={form.listingExchange}
+    onChange={(e) => updateField("listingExchange", e.target.value)}
+    className={inputClass}
+    placeholder="NSE / BSE"
+  />
+</label>
           <label className="font-bold">
   Face Value
   <input
@@ -957,6 +987,90 @@ const formToSave: IPOForm = {
             </div>
           )}
 
+          <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
+  <h2 className="text-2xl font-black text-green-400">
+    IPO Details
+  </h2>
+
+  <p className="mt-2 text-slate-400">
+    Enter complete IPO issue information.
+  </p>
+</div>
+          <label className="font-bold">
+  Issue Type
+  <input
+    value={form.issueType}
+    onChange={(e) => updateField("issueType", e.target.value)}
+    className={inputClass}
+    placeholder="Book Built / Fixed Price"
+  />
+</label>
+
+<label className="font-bold">
+  Fresh Issue
+  <input
+    value={form.freshIssue}
+    onChange={(e) => updateField("freshIssue", e.target.value)}
+    className={inputClass}
+    placeholder="₹500 Cr"
+  />
+</label>
+
+<label className="font-bold">
+  Offer For Sale (OFS)
+  <input
+    value={form.offerForSale}
+    onChange={(e) => updateField("offerForSale", e.target.value)}
+    className={inputClass}
+    placeholder="₹200 Cr"
+  />
+</label>
+
+<label className="font-bold">
+  Listing At
+  <input
+    value={form.listingAt}
+    onChange={(e) => updateField("listingAt", e.target.value)}
+    className={inputClass}
+    placeholder="NSE, BSE"
+  />
+</label>
+
+<label className="font-bold">
+  Lead Managers
+  <input
+    value={form.leadManagers}
+    onChange={(e) => updateField("leadManagers", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Market Maker
+  <input
+    value={form.marketMaker}
+    onChange={(e) => updateField("marketMaker", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Refund Date
+  <input
+    value={form.refundDate}
+    onChange={(e) => updateField("refundDate", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Demat Credit Date
+  <input
+    value={form.dematCreditDate}
+    onChange={(e) => updateField("dematCreditDate", e.target.value)}
+    className={inputClass}
+  />
+</label>
           <label className="font-bold md:col-span-2">
             Financial Performance
             <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">

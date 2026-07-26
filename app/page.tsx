@@ -541,115 +541,85 @@ return (
 
               <tbody>
 
-                {filtered.map((ipo)=>(
-              <Link
-                    key={ipo.name}
-                    href={`/ipo/${createSlug(ipo.name)}`}
-                    className="contents"
-                  >
-                    <tr className="cursor-pointer border-b border-slate-800 transition-all duration-200 hover:bg-slate-800/70 hover:shadow-lg">
+                {filtered.map((ipo) => (
+  <tr
+    key={ipo.name}
+    onClick={() => {
+      window.location.href = `/ipo/${createSlug(ipo.name)}`;
+    }}
+    className="cursor-pointer border-b border-slate-800 transition-all duration-200 hover:bg-slate-800/70 hover:shadow-lg"
+  >
+    <td className="px-6 py-6">
+      <div className="flex flex-col">
+        <span className="text-lg font-black text-white">
+          {ipo.name}
+        </span>
 
-                      <td className="px-6 py-6">
+        <span className="mt-2 text-xs font-semibold text-slate-500">
+          Click to view dashboard →
+        </span>
+      </div>
+    </td>
 
-                        <div className="flex flex-col">
+    <td className="px-6 py-6">
+      <span className={`rounded-full border px-3 py-2 text-xs font-black ${badgeColor(ipo.type)}`}>
+        {ipo.type}
+      </span>
+    </td>
 
-                          <span className="text-lg font-black text-white transition group-hover:text-green-400">
-                            {ipo.name}
-                          </span>
+    <td className="px-6 py-6">
+      <span className={`rounded-full border px-3 py-2 text-xs font-black ${badgeColor(ipo.sentiment || "Neutral")}`}>
+        {ipo.sentiment || "Neutral"}
+      </span>
+    </td>
 
-                          <span className="mt-2 text-xs font-semibold text-slate-500">
-                            Click to view dashboard →
-                          </span>
+    <td className="px-6 py-6">
+      <span className="text-xl font-black text-green-400">
+        {ipo.gmp || "--"}
+      </span>
+    </td>
 
-                        </div>
+    <td className="px-6 py-6">
+      <span className="font-bold text-green-400">
+        {ipo.listingGain || "--"}
+      </span>
+    </td>
 
-                      </td>
+    <td className="px-6 py-6 whitespace-nowrap font-bold">
+      {ipo.priceBand}
+    </td>
 
-                      <td className="px-6 py-6">
+    <td className="px-6 py-6 whitespace-nowrap">
+      {ipo.openDate}
+    </td>
 
-                        <span
-                          className={`rounded-full border px-3 py-2 text-xs font-black ${badgeColor(
-                            ipo.type
-                          )}`}
-                        >
-                          {ipo.type}
-                        </span>
+    <td className="px-6 py-6 whitespace-nowrap">
+      {ipo.closeDate}
+    </td>
 
-                      </td>
+    <td className="px-6 py-6 whitespace-nowrap font-bold">
+      {ipo.subscription}
+    </td>
 
-                      <td className="px-6 py-6">
+    <td className="px-6 py-6">
+      <span className={`rounded-full border px-3 py-2 text-xs font-black ${badgeColor(ipo.status)}`}>
+        {ipo.status}
+      </span>
+    </td>
+  </tr>
+))}
+</tbody>
 
-                        <span
-                          className={`rounded-full border px-3 py-2 text-xs font-black ${badgeColor(
-                            ipo.sentiment || "Neutral"
-                          )}`}
-                        >
-                          {ipo.sentiment || "Neutral"}
-                        </span>
+</table>
 
-                      </td>
+</div>
 
-                      <td className="px-6 py-6">
+</div>
 
-                        <span className="text-xl font-black text-green-400">
-                          {ipo.gmp || "--"}
-                        </span>
-
-                      </td>
-
-                      <td className="px-6 py-6">
-
-                        <span className="font-bold text-green-400">
-                          {ipo.listingGain || "--"}
-                        </span>
-
-                      </td>
-
-                      <td className="px-6 py-6 whitespace-nowrap font-bold">
-                        {ipo.priceBand}
-                      </td>
-
-                      <td className="px-6 py-6 whitespace-nowrap">
-                        {ipo.openDate}
-                      </td>
-
-                      <td className="px-6 py-6 whitespace-nowrap">
-                        {ipo.closeDate}
-                      </td>
-
-                      <td className="px-6 py-6 whitespace-nowrap font-bold">
-                        {ipo.subscription}
-                      </td>
-
-                      <td className="px-6 py-6">
-
-                        <span
-                          className={`rounded-full border px-3 py-2 text-xs font-black ${badgeColor(
-                            ipo.status
-                          )}`}
-                        >
-                          {ipo.status}
-                        </span>
-
-                      </td>
-
-                    </tr>
-
-                  </Link>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-        </div>
-
-      )}
+)}
 
     </section>
+    
     {/* FOOTER */}
 
     <footer className="border-t border-slate-800 bg-slate-950">
