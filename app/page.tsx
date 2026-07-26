@@ -429,7 +429,21 @@ return (
         <Link href="/ipo-news" onClick={()=>setMenuOpen(false)} className="hover:text-green-400">
           IPO News
         </Link>
+          <Link
+  href="/ipo-allotment-status"
+  onClick={() => setMenuOpen(false)}
+  className="hover:text-green-400"
+>
+  IPO Allotment
+</Link>
 
+<Link
+  href="/ipo-faq"
+  onClick={() => setMenuOpen(false)}
+  className="hover:text-green-400"
+>
+  FAQs
+</Link>
         <Link
           href="/apply-ipo"
           onClick={()=>setMenuOpen(false)}
