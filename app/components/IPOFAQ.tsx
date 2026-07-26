@@ -203,7 +203,7 @@ export default function IPOFAQ() {
           </div>
           <p style={{ margin: "0 0 20px", color: "#93C5FD", fontSize: 14 }}>Everything you need to know about IPO investing</p>
           <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16 }}>🔍</span>
+       <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16 }}>🔍</span>
             <input value={search} onChange={(e) => { setSearch(e.target.value); setOpenFaq(null); }} placeholder="Search any IPO question..." style={{ width: "100%", boxSizing: "border-box", padding: "11px 12px 11px 38px", borderRadius: 10, border: "none", fontSize: 14, background: "rgba(255,255,255,0.12)", color: "#fff", outline: "none" }} />
           </div>
         </div>
