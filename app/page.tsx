@@ -8,6 +8,7 @@ import {
   FaWhatsapp,
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { LiaAnkhSolid } from "react-icons/lia";
 
 type IPO = {
   name: string;
@@ -60,6 +61,7 @@ export default function Home() {
 
   const [ipos,setIpos]=useState<IPO[]>([]);
   const [loading,setLoading]=useState(true);
+  const [loadError,setLoadError]=useState<string | null>(null);
   const [menuOpen,setMenuOpen]=useState(false);
   const [contactOpen,setContactOpen]=useState(false);
   const [applyOpen, setApplyOpen] = useState(false);
@@ -78,11 +80,26 @@ export default function Home() {
 
         const data=await res.json();
 
-        setIpos(Array.isArray(data)?data:[]);
+        if (!res.ok) {
+          throw new Error(
+            typeof data?.message === "string"
+              ? data.message
+              : "Unable to load IPO data."
+          );
+        }
 
-      }catch{
+        if (!Array.isArray(data)) {
+          throw new Error("IPO API returned an invalid response.");
+        }
+
+        setIpos(data);
+
+      }catch(error){
 
         setIpos([]);
+        setLoadError(
+          error instanceof Error ? error.message : "Unable to load IPO data."
+        );
 
       }finally{
 
@@ -495,6 +512,18 @@ return (
 
           Loading IPO...
 
+        </div>
+
+      ) : loadError ? (
+
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-10 text-center text-red-200">
+          {loadError}
+        </div>
+
+      ) : filtered.length === 0 ? (
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center text-slate-400">
+          {ipos.length === 0 ? "No IPOs are available right now." : "No IPOs match your search."}
         </div>
 
       ) : (

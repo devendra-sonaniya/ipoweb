@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { MongoClient, Db } from "mongodb";
 
-const uri = process.env.MONGODB_URI as string;
-const dbName = process.env.MONGODB_DB as string;
-
-let cachedClient: MongoClient | null = null;
 let cachedDb: Db | null = null;
 
 async function connectToDatabase() {
@@ -12,12 +8,19 @@ async function connectToDatabase() {
     return cachedDb;
   }
 
+  const uri = process.env.MONGODB_URI?.trim();
+  const dbName = process.env.MONGODB_DB?.trim();
+
+  if (!uri || !dbName) {
+    throw new Error(
+      "MongoDB is not configured. Set MONGODB_URI and MONGODB_DB."
+    );
+  }
+
   const client = new MongoClient(uri);
   await client.connect();
-
   const db = client.db(dbName);
 
-  cachedClient = client;
   cachedDb = db;
 
   return db;
@@ -42,8 +45,16 @@ export async function GET() {
   } catch (error) {
     console.error("GET IPO ERROR:", error);
 
+    const message =
+      error instanceof Error &&
+      error.message.startsWith("MongoDB is not configured")
+        ? error.message
+        : "Unable to load IPO data.";
+
     return NextResponse.json(
-      { message: "Unable to load IPO data." },
+      {
+        message,
+      },
       { status: 500 }
     );
   }
@@ -75,7 +86,10 @@ export async function POST(request: Request) {
     console.error("POST IPO ERROR:", error);
 
     return NextResponse.json(
-      { message: "Invalid IPO data." },
+      {
+        message: "Invalid IPO data.",
+        error: error instanceof Error ? error.message : String(error),
+      },
       { status: 400 }
     );
   }
@@ -123,7 +137,10 @@ export async function PUT(request: Request) {
     console.error("PUT IPO ERROR:", error);
 
     return NextResponse.json(
-      { message: "Unable to update IPO." },
+      {
+        message: "Unable to update IPO.",
+        error: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
@@ -152,7 +169,10 @@ export async function DELETE(request: Request) {
     console.error("DELETE IPO ERROR:", error);
 
     return NextResponse.json(
-      { message: "Unable to delete IPO." },
+      {
+        message: "Unable to delete IPO.",
+        error: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
