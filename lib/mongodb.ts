@@ -16,15 +16,60 @@ if (!uri || !dbName) {
 const mongoUri: string = uri;
 const mongoDbName: string = dbName;
 
+function getConnectionMetadata() {
+  const parsedUri = new URL(mongoUri);
+
+  return {
+    scheme: parsedUri.protocol.replace(":", ""),
+    host: parsedUri.hostname,
+    database: mongoDbName,
+    usesLocalhost: ["localhost", "127.0.0.1", "::1"].includes(
+      parsedUri.hostname
+    ),
+    tlsConfiguredInUri:
+      parsedUri.searchParams.has("tls") || parsedUri.searchParams.has("ssl"),
+  };
+}
+
+function getSafeErrorDetails(error: unknown) {
+  const value = error instanceof Error ? error : new Error(String(error));
+  const errorWithCode = value as Error & { code?: string; errorLabels?: Set<string> };
+
+  return {
+    name: value.name,
+    message: value.message.replace(
+      /mongodb(?:\+srv)?:\/\/[^@\s]+@/gi,
+      "mongodb://<redacted>@"
+    ),
+    code: errorWithCode.code,
+    errorLabels: errorWithCode.errorLabels
+      ? [...errorWithCode.errorLabels]
+      : undefined,
+  };
+}
+
 // Do not pass TLS options here. The connection string is the single source of
 // truth for TLS configuration and its `ssl=true` setting remains intact.
 function getMongoClient(): Promise<MongoClient> {
   if (!globalThis.__mongoClientPromise) {
+    const reusingClient = Boolean(globalThis.__mongoClient);
     const client = (globalThis.__mongoClient ??= new MongoClient(mongoUri));
 
-    globalThis.__mongoClientPromise = client.connect().catch(async (error) => {
+    console.info("[mongodb] connection attempt", {
+      ...getConnectionMetadata(),
+      reusingClient,
+    });
+
+    globalThis.__mongoClientPromise = client.connect().then(() => {
+      console.info("[mongodb] connection established", getConnectionMetadata());
+      return client;
+    }).catch(async (error) => {
       // Do not cache a failed TLS handshake. Clear both values together so a
       // subsequent request performs one fresh, shared connection attempt.
+      console.error("[mongodb] connection failed", {
+        ...getConnectionMetadata(),
+        error: getSafeErrorDetails(error),
+      });
       globalThis.__mongoClientPromise = undefined;
       globalThis.__mongoClient = undefined;
       await client.close().catch(() => undefined);
