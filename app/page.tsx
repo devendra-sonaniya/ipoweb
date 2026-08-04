@@ -1,16 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
   FaTelegramPlane,
+  FaInstagram,
   FaYoutube,
   FaWhatsapp,
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { LiaAnkhSolid } from "react-icons/lia";
+import { brokerLinks } from "@/lib/brokerLinks";
+import { socialLinks } from "@/lib/socialLinks";
+import {
+  getAllotmentButtonState,
+  type AllotmentButtonIPO,
+} from "@/lib/allotmentButtonState";
+import { HomepageFAQ } from "./components/IPOFAQ";
 
-type IPO = {
+type IPO = AllotmentButtonIPO & {
   name: string;
   type: string;
   status: string;
@@ -21,8 +29,18 @@ type IPO = {
   subscription: string;
   openDate: string;
   closeDate: string;
+  allotmentDate?: string;
   listingDate: string;
+  registrar?: string;
 };
+
+const subscribeToTheme = (onStoreChange: () => void) => {
+  window.addEventListener("ipoweb-theme-change", onStoreChange);
+  return () => window.removeEventListener("ipoweb-theme-change", onStoreChange);
+};
+
+const getCurrentTheme = () => document.documentElement.classList.contains("dark");
+const getServerTheme = () => true;
 
 function createSlug(name: string) {
   return name
@@ -66,7 +84,19 @@ export default function Home() {
   const [contactOpen,setContactOpen]=useState(false);
   const [applyOpen, setApplyOpen] = useState(false);
   const [search,setSearch]=useState("");
-  const [darkMode, setDarkMode] = useState(true);
+  const darkMode = useSyncExternalStore(
+    subscribeToTheme,
+    getCurrentTheme,
+    getServerTheme,
+  );
+
+  const toggleTheme = () => {
+    const nextDarkMode = !darkMode;
+    document.documentElement.classList.toggle("dark", nextDarkMode);
+    document.documentElement.dataset.theme = nextDarkMode ? "dark" : "light";
+    localStorage.setItem("ipoweb-theme", nextDarkMode ? "dark" : "light");
+    window.dispatchEvent(new Event("ipoweb-theme-change"));
+  };
 
   useEffect(()=>{
 
@@ -151,7 +181,7 @@ return (
       <Link
         href="/allotment-status"
         onClick={()=>setMenuOpen(false)}
-        className="block rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
+        className="block rounded-lg px-3 py-3 font-bold text-yellow-400 transition hover:bg-slate-800 hover:text-yellow-300"
       >
         📋 IPO Allotment Status
       </Link>
@@ -173,16 +203,16 @@ return (
       </Link>
 
       <Link
-        href="/how-to-apply"
+        href="/ipo-faq"
         onClick={()=>setMenuOpen(false)}
         className="block rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
       >
-        ❓ IPO FAQs / How to Apply
+        ❓ FAQs
       </Link>
 
       <div className="mt-2 border-t border-slate-800 pt-2">
         <button
-          onClick={()=>setDarkMode(!darkMode)}
+          onClick={toggleTheme}
           className="flex w-full items-center justify-between rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
         >
           <span>{darkMode ? "🌙 Dark Mode" : "☀️ Light Mode"}</span>
@@ -237,8 +267,8 @@ return (
         Upcoming IPO
       </Link>
 
-      <Link href="/ipo-news" className="hover:text-green-400">
-        IPO News
+      <Link href="/allotment-status" className="text-yellow-400 hover:text-yellow-300">
+        Allotment Status
       </Link>
 
     </nav>
@@ -255,45 +285,44 @@ return (
   {applyOpen && (
     <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-2xl">
 
-      <a
-        href="#"
-        className="flex items-center gap-3 rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
-      >
-        <img src="/logos/groww.png" alt="Groww" className="h-6 w-6 object-contain" />
-        Groww
-      </a>
-
-      <a
-        href="#"
-        className="flex items-center gap-3 rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
-      >
-        <img src="/logos/zerodha.png" alt="Zerodha" className="h-6 w-6 object-contain" />
-        Zerodha
-      </a>
-
-      <a
-        href="#"
-        className="flex items-center gap-3 rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
-      >
-        <img src="/logos/upstox.png" alt="Upstox" className="h-6 w-6 object-contain" />
-        Upstox
-      </a>
-
-      <a
-        href="#"
-        className="flex items-center gap-3 rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
-      >
-        <img src="/logos/angelone.png" alt="Angel One" className="h-6 w-6 object-contain" />
-        Angel One
-      </a>
-
-      <a
-        href="#"
-        className="flex items-center gap-3 rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
-      >
-        <img src="/logos/motilaloswal.png" alt="Motilal Oswal" className="h-6 w-6 object-contain" />
-        Motilal Oswal
-      </a>
+      {brokerLinks.map((broker) => (
+        <a
+          key={broker.name}
+          href={broker.url || undefined}
+          target={broker.url ? "_blank" : undefined}
+          rel={broker.url ? "noopener noreferrer" : undefined}
+          aria-disabled={!broker.url}
+          tabIndex={broker.url ? undefined : -1}
+          onClick={broker.url ? undefined : (event) => event.preventDefault()}
+          className="flex items-center gap-3 rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
+        >
+          <div
+            style={{
+              width: 22,
+              height: 22,
+              minWidth: 22,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <img
+              src={broker.logo}
+              alt={broker.name}
+              width={22}
+              height={22}
+              style={{
+                display: "block",
+                width: 22,
+                height: 22,
+                objectFit: "contain",
+              }}
+            />
+          </div>
+          {broker.name}
+        </a>
+      ))}
 
     </div>
   )}
@@ -443,16 +472,9 @@ return (
           Upcoming IPO
         </Link>
 
-        <Link href="/ipo-news" onClick={()=>setMenuOpen(false)} className="hover:text-green-400">
-          IPO News
+        <Link href="/allotment-status" onClick={()=>setMenuOpen(false)} className="text-yellow-400 hover:text-yellow-300">
+          Allotment Status
         </Link>
-          <Link
-  href="/ipo-allotment-status"
-  onClick={() => setMenuOpen(false)}
-  className="hover:text-green-400"
->
-  IPO Allotment
-</Link>
 
 <Link
   href="/ipo-faq"
@@ -584,7 +606,10 @@ return (
 
               <tbody>
 
-                {filtered.map((ipo) => (
+                {filtered.map((ipo) => {
+                  const allotmentButton = getAllotmentButtonState(ipo);
+
+                  return (
   <tr
     key={ipo.name}
     onClick={() => {
@@ -601,6 +626,27 @@ return (
         <span className="mt-2 text-xs font-semibold text-slate-500">
           Click to view dashboard →
         </span>
+
+        {allotmentButton.kind === "available" ? (
+          <a
+            href={allotmentButton.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(event) => event.stopPropagation()}
+            className="mt-3 w-fit rounded-lg bg-green-500 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-green-400"
+          >
+            Allotment Status
+          </a>
+        ) : allotmentButton.kind === "soon" ? (
+          <button
+            type="button"
+            disabled
+            onClick={(event) => event.stopPropagation()}
+            className="mt-3 w-fit rounded-lg bg-yellow-400 px-3 py-2 text-xs font-bold text-black transition disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Allotment Soon
+          </button>
+        ) : null}
       </div>
     </td>
 
@@ -650,7 +696,8 @@ return (
       </span>
     </td>
   </tr>
-))}
+                  );
+                })}
 </tbody>
 
 </table>
@@ -662,6 +709,8 @@ return (
 )}
 
     </section>
+
+    <HomepageFAQ />
     
     {/* FOOTER */}
 
@@ -741,13 +790,54 @@ return (
 
   <div className="flex gap-5 text-3xl">
 
-    <FaTelegramPlane className="cursor-pointer text-sky-400 transition hover:scale-110"/>
-
-    <FaXTwitter className="cursor-pointer transition hover:scale-110"/>
-
-    <FaYoutube className="cursor-pointer text-red-600 transition hover:scale-110"/>
-
-    <FaWhatsapp className="cursor-pointer text-green-500 transition hover:scale-110"/>
+    {[
+      {
+        name: "Telegram",
+        href: socialLinks.telegram,
+        Icon: FaTelegramPlane,
+        className: "cursor-pointer text-sky-400 transition hover:scale-110",
+      },
+      {
+        name: "YouTube",
+        href: socialLinks.youtube,
+        Icon: FaYoutube,
+        className: "cursor-pointer text-red-600 transition hover:scale-110",
+      },
+      {
+        name: "WhatsApp",
+        href: socialLinks.whatsapp,
+        Icon: FaWhatsapp,
+        className: "cursor-pointer text-green-500 transition hover:scale-110",
+      },
+      {
+        name: "Instagram",
+        href: socialLinks.instagram,
+        Icon: FaInstagram,
+        className: "cursor-pointer transition hover:scale-110",
+      },
+      {
+        name: "X",
+        href: socialLinks.x,
+        Icon: FaXTwitter,
+        className: "cursor-pointer transition hover:scale-110",
+      },
+    ].map(({ name, href, Icon, className }) =>
+      href ? (
+        <a
+          key={name}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={name}
+        >
+          <Icon className={className} />
+        </a>
+      ) : (
+        <span key={name} aria-disabled="true" aria-label={name}>
+          <Icon className={className} />
+        </span>
+      )
+    )}
 
   </div>
 

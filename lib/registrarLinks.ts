@@ -1,5 +1,5 @@
 export function getRegistrarLink(registrar: string) {
-  const r = registrar.toLowerCase();
+  const r = registrar.trim().toLowerCase().replace(/\s+/g, " ");
 
   if (r.includes("kfin")) {
     return "https://ris.kfintech.com/ipostatus/";

@@ -1,60 +1,77 @@
 import { NextResponse } from "next/server";
-import { MongoClient, Db } from "mongodb";
+import type { Db } from "mongodb";
+import { connectToDatabase } from "@/lib/mongodb";
 
-let cachedDb: Db | null = null;
-
-async function connectToDatabase() {
-  if (cachedDb) {
-    return cachedDb;
-  }
-
-  const uri = process.env.MONGODB_URI?.trim();
-  const dbName = process.env.MONGODB_DB?.trim();
-
-  if (!uri || !dbName) {
-    throw new Error(
-      "MongoDB is not configured. Set MONGODB_URI and MONGODB_DB."
-    );
-  }
-
-  const client = new MongoClient(uri);
-  await client.connect();
-  const db = client.db(dbName);
-
-  cachedDb = db;
-
-  return db;
-}
+export const runtime = "nodejs";
 
 type IPO = Record<string, unknown>;
 
 export async function GET() {
+  let db: Db;
+
   try {
-    const db = await connectToDatabase();
+    db = await connectToDatabase();
+    console.log("Connected to MongoDB");
+    console.log("Database:", process.env.MONGODB_DB);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
 
-    const ipos = await db
-      .collection("ipos")
-      .find({})
-      .sort({ _id: -1 })
-      .project({ _id: 0 })
-      .toArray();
+  let collection;
+  try {
+    collection = db.collection("ipos");
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
 
+  let cursor;
+  try {
+    cursor = collection.find({});
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
+
+  try {
+    cursor = cursor.sort({ _id: -1 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
+
+  try {
+    cursor = cursor.project({ _id: 0 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
+
+  try {
+    const ipos = await cursor.toArray();
     return NextResponse.json(ipos, {
       status: 200,
     });
   } catch (error) {
-    console.error("GET IPO ERROR:", error);
-
-    const message =
-      error instanceof Error &&
-      error.message.startsWith("MongoDB is not configured")
-        ? error.message
-        : "Unable to load IPO data.";
-
+    console.error(error);
     return NextResponse.json(
-      {
-        message,
-      },
+      { message: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

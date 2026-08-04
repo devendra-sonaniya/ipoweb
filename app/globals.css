@@ -1,8 +1,12 @@
 @import "tailwindcss";
+@config "../tailwind.config.js";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -12,11 +16,49 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root:not(.dark) {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  color-scheme: light;
+  --color-white: #0f172a;
+
+  --color-slate-950: #f8fafc;
+  --color-slate-900: #ffffff;
+  --color-slate-800: #f1f5f9;
+  --color-slate-700: #cbd5e1;
+  --color-slate-600: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-400: #475569;
+  --color-slate-300: #334155;
+  --color-slate-200: #1e293b;
+  --color-slate-100: #0f172a;
+
+  --color-gray-900: #ffffff;
+  --color-gray-800: #f1f5f9;
+  --color-gray-700: #cbd5e1;
+  --color-gray-400: #475569;
+  --color-gray-300: #334155;
+
+  --color-blue-950: #dbeafe;
+  --color-blue-700: #1d4ed8;
+  --color-blue-600: #2563eb;
+  --color-blue-500: #3b82f6;
+  --color-blue-300: #1d4ed8;
+
+  --color-green-950: #dcfce7;
+  --color-green-700: #15803d;
+  --color-green-600: #16a34a;
+  --color-green-500: #22c55e;
+  --color-green-400: #15803d;
+
+  --color-red-600: #dc2626;
+  --color-red-500: #ef4444;
+  --color-red-400: #dc2626;
+  --color-red-200: #991b1b;
+
+  --color-yellow-500: #eab308;
+  --color-yellow-400: #eab308;
+  --color-yellow-300: #a16207;
 }
 
 body {

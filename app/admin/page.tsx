@@ -30,6 +30,7 @@ type IPOForm = {
   listingDate: string;
   listingExchange: string;
   registrar: string;
+  allotmentLink: string;
   financials: string;
   faceValue: string;
   drhpLink: string;
@@ -166,6 +167,7 @@ const initialForm: IPOForm = {
   rhpLink: "",
   listingExchange: "",
   registrar: "",
+  allotmentLink: "",
   financials: "",
   faceValue: "",
 
@@ -844,7 +846,20 @@ onChange={(event) =>
               className={inputClass}
             />
           </label>
-          
+
+          <label className="font-bold md:col-span-2">
+            Allotment Link
+            <input
+              type="url"
+              value={form.allotmentLink}
+              onChange={(event) =>
+                updateField("allotmentLink", event.target.value)
+              }
+              className={inputClass}
+              placeholder="https://registrar.example.com/ipo-status"
+            />
+          </label>
+
           <label className="font-bold">
   Listing Exchange
   <input

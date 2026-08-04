@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-interface FAQ {
+export interface FAQ {
   q: string;
   a: string;
 }
@@ -15,7 +15,7 @@ interface Category {
   faqs: FAQ[];
 }
 
-const categories: Category[] = [
+export const faqCategories: Category[] = [
   {
     id: 1,
     emoji: "📘",
@@ -180,12 +180,12 @@ export default function IPOFAQ() {
   const [openFaq, setOpenFaq] = useState<number | string | null>(null);
   const [search, setSearch] = useState("");
 
-  const cat = categories[activeCategory];
+  const cat = faqCategories[activeCategory];
 
   type SearchFAQ = FAQ & { catTitle: string; catColor: string; catBg: string };
 
   const filteredFaqs: SearchFAQ[] | null = search.trim()
-    ? categories.flatMap((c) =>
+    ? faqCategories.flatMap((c) =>
         c.faqs
           .filter((f) => f.q.toLowerCase().includes(search.toLowerCase()) || f.a.toLowerCase().includes(search.toLowerCase()))
           .map((f) => ({ ...f, catTitle: c.title, catColor: c.color, catBg: c.bg }))
@@ -227,7 +227,7 @@ export default function IPOFAQ() {
         ) : (
           <>
             <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "16px 0 12px", scrollbarWidth: "none" }}>
-              {categories.map((c, i) => (
+              {faqCategories.map((c, i) => (
                 <button key={c.id} onClick={() => { setActiveCategory(i); setOpenFaq(null); }} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 20, border: "none", cursor: "pointer", whiteSpace: "nowrap", fontSize: 13, fontWeight: 600, background: activeCategory === i ? c.color : "#fff", color: activeCategory === i ? "#fff" : "#475569", boxShadow: activeCategory === i ? `0 4px 12px ${c.color}40` : "0 1px 3px rgba(0,0,0,0.08)" }}>
                   <span>{c.emoji}</span>
                   <span>{c.title}</span>
@@ -254,5 +254,90 @@ export default function IPOFAQ() {
         IPOWEB FAQ Hub • Data for educational purposes only • Not investment advice
       </div>
     </div>
+  );
+}
+
+const homepageFaqs = faqCategories.flatMap((category) => category.faqs.slice(0, 1));
+
+export function HomepageFAQ() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: homepageFaqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.a,
+      },
+    })),
+  };
+
+  return (
+    <section aria-labelledby="homepage-faq-title" className="border-t border-slate-800 bg-slate-950 px-5 py-14">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      <div className="mx-auto max-w-[1200px]">
+        <h2 id="homepage-faq-title" className="text-3xl font-black text-green-400">
+          Frequently Asked Questions
+        </h2>
+        <p className="mt-3 max-w-3xl text-slate-400">
+          Find answers to the most common questions about IPOs, GMP, subscriptions, allotment, listing, and IPOWEB.
+        </p>
+
+        <div className="mt-8 space-y-3">
+          {homepageFaqs.map((faq, index) => {
+            const isOpen = openFaq === index;
+            const buttonId = `homepage-faq-button-${index}`;
+            const panelId = `homepage-faq-panel-${index}`;
+
+            return (
+              <div key={faq.q} className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
+                <button
+                  id={buttonId}
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  onClick={() => setOpenFaq(isOpen ? null : index)}
+                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-bold text-white transition hover:bg-slate-800"
+                >
+                  <span>{faq.q}</span>
+                  <span
+                    aria-hidden="true"
+                    className={`text-xl text-green-400 transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`}
+                  >
+                    ▾
+                  </span>
+                </button>
+                <div
+                  id={panelId}
+                  role="region"
+                  aria-labelledby={buttonId}
+                  className={`grid transition-[grid-template-rows] duration-200 ease-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                >
+                  <div className="overflow-hidden">
+                    <p className="border-t border-slate-800 px-5 py-4 leading-7 text-slate-400">
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-8">
+          <a
+            href="/ipo-faq"
+            className="inline-flex rounded-lg bg-green-500 px-5 py-3 font-black text-slate-950 transition hover:bg-green-400"
+          >
+            View All FAQs
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }
