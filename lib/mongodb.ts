@@ -17,17 +17,25 @@ const mongoUri: string = uri;
 const mongoDbName: string = dbName;
 
 function getConnectionMetadata() {
-  const parsedUri = new URL(mongoUri);
+  const scheme = mongoUri.match(/^([^:]+):/)?.[1] ?? "unknown";
+  const authority = mongoUri
+    .replace(/^mongodb(?:\+srv)?:\/\//i, "")
+    .split("/", 1)[0]
+    .split("@").at(-1) ?? "";
+  const hosts = authority
+    .split(",")
+    .map((host) => host.replace(/:\d+$/, ""))
+    .filter(Boolean);
 
   return {
-    scheme: parsedUri.protocol.replace(":", ""),
-    host: parsedUri.hostname,
+    scheme,
+    host: hosts[0] ?? "unknown",
+    hostCount: hosts.length,
     database: mongoDbName,
     usesLocalhost: ["localhost", "127.0.0.1", "::1"].includes(
-      parsedUri.hostname
+      hosts[0] ?? ""
     ),
-    tlsConfiguredInUri:
-      parsedUri.searchParams.has("tls") || parsedUri.searchParams.has("ssl"),
+    tlsConfiguredInUri: /[?&](?:tls|ssl)=/i.test(mongoUri),
   };
 }
 
