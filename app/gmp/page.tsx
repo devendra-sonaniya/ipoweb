@@ -43,14 +43,14 @@ export default function GMPPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-slate-950 px-5 py-12 text-white">
+    <main className="min-h-screen bg-slate-950 px-5 py-12 text-white max-sm:px-4 max-sm:py-8">
       <div className="mx-auto max-w-[1200px]">
 
         <Link href="/" className="font-bold text-green-400">
           ← Back to Home
         </Link>
 
-        <h1 className="mt-6 text-4xl font-black">
+        <h1 className="mt-6 text-4xl font-black max-sm:text-3xl">
           IPO <span className="text-green-400">GMP</span>
         </h1>
 
@@ -65,7 +65,7 @@ export default function GMPPage() {
         ) : (
           <div className="mt-8 overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
 
-            <div className="overflow-x-auto">
+            <div className="mobile-table-scroll overflow-x-auto">
 
               <table className="w-full min-w-[700px]">
 

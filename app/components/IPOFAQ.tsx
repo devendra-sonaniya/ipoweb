@@ -275,13 +275,13 @@ export function HomepageFAQ() {
   };
 
   return (
-    <section aria-labelledby="homepage-faq-title" className="border-t border-slate-800 bg-slate-950 px-5 py-14">
+    <section aria-labelledby="homepage-faq-title" className="border-t border-slate-800 bg-slate-950 px-5 py-14 max-sm:px-4 max-sm:py-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
       <div className="mx-auto max-w-[1200px]">
-        <h2 id="homepage-faq-title" className="text-3xl font-black text-green-400">
+        <h2 id="homepage-faq-title" className="text-3xl font-black text-green-400 max-sm:text-2xl">
           Frequently Asked Questions
         </h2>
         <p className="mt-3 max-w-3xl text-slate-400">

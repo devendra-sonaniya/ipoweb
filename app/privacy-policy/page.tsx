@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function PrivacyPolicyPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto max-w-6xl px-6 py-10">
+      <div className="mx-auto max-w-6xl px-6 py-10 max-sm:px-4 max-sm:py-8">
         <nav aria-label="Breadcrumb" className="text-sm font-bold text-slate-400">
           <Link href="/" className="transition hover:text-green-400">
             Home
@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
           </span>
         </nav>
 
-        <h1 className="mt-6 text-4xl font-black text-green-400">
+        <h1 className="mt-6 text-4xl font-black text-green-400 max-sm:text-3xl">
           Privacy Policy
         </h1>
         <p className="mt-3 text-slate-400">Last Updated: 05 August 2026</p>

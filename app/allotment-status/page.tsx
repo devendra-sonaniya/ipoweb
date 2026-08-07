@@ -89,7 +89,7 @@ export default function AllotmentStatusPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="border-b border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
-        <div className="mx-auto max-w-[1500px] px-5 py-12">
+        <div className="mx-auto max-w-[1500px] px-5 py-12 max-sm:px-4 max-sm:py-8">
           <p className="font-bold uppercase tracking-wider text-green-400">
             IPOWEB.IN
           </p>
@@ -102,7 +102,7 @@ export default function AllotmentStatusPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1500px] px-5 py-10">
+      <section className="mx-auto max-w-[1500px] px-5 py-10 max-sm:px-4 max-sm:py-8">
         {loading ? (
           <div className="rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center">
             Loading allotment status...
@@ -117,7 +117,7 @@ export default function AllotmentStatusPage() {
           </div>
         ) : (
           <div className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
-            <div className="overflow-x-auto">
+            <div className="mobile-table-scroll overflow-x-auto">
               <table className="min-w-[760px] w-full text-left">
                 <thead className="bg-slate-950">
                   <tr className="border-b border-slate-700">

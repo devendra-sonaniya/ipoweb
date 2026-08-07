@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { calculateIPOIntelligence } from "../ipoIntelligence";
 type GMPHistoryItem = {
   date: string;
   value: string;
@@ -31,6 +30,7 @@ type IPOForm = {
   listingExchange: string;
   registrar: string;
   allotmentLink: string;
+  growwIPOUrl: string;
   financials: string;
   faceValue: string;
   drhpLink: string;
@@ -88,7 +88,9 @@ peRatio: string;
 industryPE: string;
 pbRatio: string;
 debtToEquity: string;
-totalAssets: string;
+  totalAssetsFY2024: string;
+  totalAssetsFY2025: string;
+  totalAssetsFY2026: string;
 ipoValuation: string;
   gmpTrend: string;
   strengths: string;
@@ -108,6 +110,7 @@ peerPE: string;
 peerMarketCap: string;
 peerROE: string;
 peerDebtEquity: string;
+peerTotalAssets: string;
 
 peer1Name: string;
 peer1Revenue: string;
@@ -117,6 +120,7 @@ peer1PE: string;
 peer1MarketCap: string;
 peer1ROE: string;
 peer1DebtEquity: string;
+peer1TotalAssets: string;
 
 peer2Name: string;
 peer2Revenue: string;
@@ -126,6 +130,7 @@ peer2PE: string;
 peer2MarketCap: string;
 peer2ROE: string;
 peer2DebtEquity: string;
+peer2TotalAssets: string;
 
 peer3Name: string;
 peer3Revenue: string;
@@ -135,12 +140,49 @@ peer3PE: string;
 peer3MarketCap: string;
 peer3ROE: string;
 peer3DebtEquity: string;
+peer3TotalAssets: string;
 companyOverview: string;
 businessModel: string;
 objectsOfIssue: string;
 businessRisk: string;
   gmpHistory: GMPHistoryItem[];
 };
+
+const IPO_TYPE_VALUES = ["MAINBOARD", "SME", "NSE SME", "BSE SME"] as const;
+const SUBSCRIPTION_EXCHANGES = ["NSE", "BSE"] as const;
+const OFFICIAL_DOCUMENT_SOURCES = [
+  "DRHP",
+  "RHP",
+  "NSE",
+  "BSE",
+  "SEBI",
+] as const;
+
+function normalizeIPOType(value: string | null | undefined) {
+  const normalized = (value ?? "").trim().toUpperCase();
+
+  if (normalized === "MAINBOARD IPO") return "MAINBOARD";
+  if (normalized === "SME IPO") return "SME";
+
+  return IPO_TYPE_VALUES.find((option) => option === normalized) ?? "MAINBOARD";
+}
+
+function normalizeLegacyOption(
+  value: string | null | undefined,
+  options: readonly string[],
+  fallback: string
+) {
+  const normalized = (value ?? "").trim().toUpperCase();
+
+  if (options.includes(normalized)) return normalized;
+
+  const legacyParts = normalized
+    .split(/[\/,|]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return options.find((option) => legacyParts.includes(option)) ?? fallback;
+}
 
 const initialForm: IPOForm = {
   name: "",
@@ -168,6 +210,7 @@ const initialForm: IPOForm = {
   listingExchange: "",
   registrar: "",
   allotmentLink: "",
+  growwIPOUrl: "",
   financials: "",
   faceValue: "",
 
@@ -223,14 +266,16 @@ peRatio: "",
 industryPE: "",
 pbRatio: "",
 debtToEquity: "",
-totalAssets: "",
+totalAssetsFY2024: "",
+totalAssetsFY2025: "",
+totalAssetsFY2026: "",
 ipoValuation: "",
   gmpTrend: "",
   strengths: "",
   risks: "",
-  gmpSource: "",
-subscriptionSource: "",
-officialSource: "",
+  gmpSource: "GREY MARKET",
+subscriptionSource: "NSE",
+officialSource: "DRHP",
 lastUpdated: "",
 revenueGrowth: "",
 patGrowth: "",
@@ -243,6 +288,7 @@ peerPE: "",
 peerMarketCap: "",
 peerROE: "",
 peerDebtEquity: "",
+peerTotalAssets: "",
 
 peer1Name: "",
 peer1Revenue: "",
@@ -252,6 +298,7 @@ peer1PE: "",
 peer1MarketCap: "",
 peer1ROE: "",
 peer1DebtEquity: "",
+peer1TotalAssets: "",
 
 peer2Name: "",
 peer2Revenue: "",
@@ -261,6 +308,7 @@ peer2PE: "",
 peer2MarketCap: "",
 peer2ROE: "",
 peer2DebtEquity: "",
+peer2TotalAssets: "",
 
 peer3Name: "",
 peer3Revenue: "",
@@ -270,6 +318,7 @@ peer3PE: "",
 peer3MarketCap: "",
 peer3ROE: "",
 peer3DebtEquity: "",
+peer3TotalAssets: "",
 companyOverview: "",
 businessModel: "",
 objectsOfIssue: "",
@@ -278,6 +327,7 @@ businessRisk: "",
 };
 
 export default function AdminPage() {
+  const [adminKey, setAdminKey] = useState("");
   const [form, setForm] = useState<IPOForm>(initialForm);
   const [ipos, setIpos] = useState<IPOForm[]>([]);
   const [saving, setSaving] = useState(false);
@@ -309,6 +359,8 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
+    // Data loading completes asynchronously; state is not changed during setup.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadIPOs();
   }, []);
 
@@ -360,6 +412,18 @@ export default function AdminPage() {
     setForm({
       ...initialForm,
       ...ipo,
+      type: normalizeIPOType(ipo.type),
+      gmpSource: "GREY MARKET",
+      subscriptionSource: normalizeLegacyOption(
+        ipo.subscriptionSource,
+        SUBSCRIPTION_EXCHANGES,
+        "NSE"
+      ),
+      officialSource: normalizeLegacyOption(
+        ipo.officialSource,
+        OFFICIAL_DOCUMENT_SOURCES,
+        "DRHP"
+      ),
       gmpHistory: Array.isArray(ipo.gmpHistory)
         ? ipo.gmpHistory
         : [],
@@ -429,8 +493,13 @@ export default function AdminPage() {
           : form.listingGain;
 
 
+const mappedForm = Object.fromEntries(
+  (Object.keys(initialForm) as (keyof IPOForm)[]).map((key) => [key, form[key]])
+) as IPOForm;
+
 const formToSave: IPOForm = {
-  ...form,
+  ...mappedForm,
+  gmpSource: "GREY MARKET",
   gmp: latestHistoryGMP,
   listingGain: autoListingGain,
 };
@@ -439,6 +508,7 @@ const formToSave: IPOForm = {
         method: editingName ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${adminKey}`,
         },
         body: editingName
           ? JSON.stringify({
@@ -496,6 +566,7 @@ const formToSave: IPOForm = {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${adminKey}`,
         },
         body: JSON.stringify({ name }),
       });
@@ -526,13 +597,13 @@ const formToSave: IPOForm = {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
+    <main className="min-h-screen bg-slate-950 px-4 py-10 text-white max-sm:py-6">
       <div className="mx-auto max-w-5xl">
         <p className="font-bold uppercase tracking-wider text-green-400">
           IPOWEB.IN ADMIN
         </p>
 
-        <h1 className="mt-2 text-4xl font-black">
+        <h1 className="mt-2 text-4xl font-black max-sm:text-3xl">
           IPO Admin Dashboard
         </h1>
 
@@ -541,9 +612,21 @@ const formToSave: IPOForm = {
           data.
         </p>
 
+        <label className="mt-6 block font-bold">
+          Admin API key
+          <input
+            required
+            type="password"
+            autoComplete="current-password"
+            value={adminKey}
+            onChange={(event) => setAdminKey(event.target.value)}
+            className={`${inputClass} max-w-xl`}
+          />
+        </label>
+
         <form
           onSubmit={handleSubmit}
-          className="mt-10 grid gap-5 rounded-3xl border border-slate-700 bg-slate-900 p-6 md:grid-cols-2"
+          className="mt-10 grid gap-5 rounded-3xl border border-slate-700 bg-slate-900 p-6 max-sm:mt-6 max-sm:rounded-2xl max-sm:p-4 md:grid-cols-2"
         >
           {editingName && (
             <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 font-bold text-yellow-300 md:col-span-2">
@@ -572,10 +655,10 @@ const formToSave: IPOForm = {
               }
               className={inputClass}
             >
-              <option value="MAINBOARD">
-                MAINBOARD
-              </option>
-              <option value="SME">SME</option>
+              <option value="MAINBOARD">Mainboard IPO</option>
+              <option value="SME">SME IPO</option>
+              <option value="NSE SME">NSE SME</option>
+              <option value="BSE SME">BSE SME</option>
             </select>
           </label>
 
@@ -645,6 +728,19 @@ const formToSave: IPOForm = {
               readOnly
               placeholder="Calculated automatically"
               className={`${inputClass} opacity-70`}
+            />
+          </label>
+
+          <label className="font-bold">
+            Listing Price
+            <input
+              value={form.listingPrice}
+              onChange={(event) =>
+                updateField("listingPrice", event.target.value)
+              }
+              inputMode="decimal"
+              placeholder="₹150"
+              className={inputClass}
             />
           </label>
 
@@ -860,6 +956,19 @@ onChange={(event) =>
             />
           </label>
 
+          <label className="font-bold md:col-span-2">
+            Groww IPO Link
+            <input
+              type="url"
+              value={form.growwIPOUrl}
+              onChange={(event) =>
+                updateField("growwIPOUrl", event.target.value)
+              }
+              className={inputClass}
+              placeholder="https://groww.in/ipo/ardee-industries-ipo"
+            />
+          </label>
+
           <label className="font-bold">
   Listing Exchange
   <input
@@ -894,37 +1003,41 @@ onChange={(event) =>
   <label className="font-bold">
     GMP Source
     <input
-      value={form.gmpSource}
-      onChange={(event) =>
-        setForm({ ...form, gmpSource: event.target.value })
-      }
+      value="GREY MARKET"
+      readOnly
       className={inputClass}
-      placeholder="Example: IPO Watch"
     />
   </label>
 
   <label className="font-bold">
-    Subscription Source
-    <input
+    Subscription Exchange
+    <select
       value={form.subscriptionSource}
       onChange={(event) =>
-        setForm({ ...form, subscriptionSource: event.target.value })
+        updateField("subscriptionSource", event.target.value)
       }
       className={inputClass}
-      placeholder="Example: NSE"
-    />
+    >
+      <option value="NSE">NSE</option>
+      <option value="BSE">BSE</option>
+    </select>
   </label>
 
   <label className="font-bold">
-    Official Source
-    <input
+    Official Documents
+    <select
       value={form.officialSource}
       onChange={(event) =>
-        setForm({ ...form, officialSource: event.target.value })
+        updateField("officialSource", event.target.value)
       }
       className={inputClass}
-      placeholder="Example: RHP / NSE / BSE"
-    />
+    >
+      <option value="DRHP">DRHP</option>
+      <option value="RHP">RHP</option>
+      <option value="NSE">NSE</option>
+      <option value="BSE">BSE</option>
+      <option value="SEBI">SEBI</option>
+    </select>
   </label>
 
   <label className="font-bold">
@@ -1147,6 +1260,33 @@ onChange={(event) =>
     className={inputClass}
   />
 </label>
+
+<label className="font-bold">
+  Total Assets FY2024
+  <input
+    value={form.totalAssetsFY2024}
+    onChange={(e) => updateField("totalAssetsFY2024", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Total Assets FY2025
+  <input
+    value={form.totalAssetsFY2025}
+    onChange={(e) => updateField("totalAssetsFY2025", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Total Assets FY2026
+  <input
+    value={form.totalAssetsFY2026}
+    onChange={(e) => updateField("totalAssetsFY2026", e.target.value)}
+    className={inputClass}
+  />
+</label>
        
              <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
   <h2 className="text-2xl font-black text-green-400">
@@ -1362,12 +1502,6 @@ onChange={(event) =>
   </h2>
 </div>
 
-        <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
-  <h2 className="text-2xl font-black text-green-400">
-    Peer Comparison
-  </h2>
-</div>
-
 <label className="font-bold">
   Market Cap (Post IPO)
   <input
@@ -1441,15 +1575,6 @@ onChange={(event) =>
 </label>
 
 <label className="font-bold">
-  Total Assets
-  <input
-    value={form.totalAssets}
-    onChange={(e) => updateField("totalAssets", e.target.value)}
-    className={inputClass}
-  />
-</label>
-
-<label className="font-bold">
   IPO Valuation
   <input
     value={form.ipoValuation}
@@ -1457,6 +1582,12 @@ onChange={(event) =>
     className={inputClass}
   />
 </label>
+
+<div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
+  <h2 className="text-2xl font-black text-green-400">
+    Peer Comparison
+  </h2>
+</div>
  
              <label className="font-bold">
   IPO Revenue
@@ -1494,6 +1625,15 @@ onChange={(event) =>
   />
 </label>
 
+<label className="font-bold">
+  IPO Total Assets
+  <input
+    value={form.peerTotalAssets}
+    onChange={(e) => updateField("peerTotalAssets", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
              <label className="font-bold">
   Peer 1 Name
   <input
@@ -1526,6 +1666,15 @@ onChange={(event) =>
   <input
     value={form.peer1PE}
     onChange={(e) => updateField("peer1PE", e.target.value)}
+    className={inputClass}
+  />
+</label>
+
+<label className="font-bold">
+  Peer 1 Total Assets
+  <input
+    value={form.peer1TotalAssets}
+    onChange={(e) => updateField("peer1TotalAssets", e.target.value)}
     className={inputClass}
   />
 </label>
@@ -1600,6 +1749,15 @@ onChange={(event) =>
     className={inputClass}
   />
 </label>
+
+<label className="font-bold">
+  Peer 2 Total Assets
+  <input
+    value={form.peer2TotalAssets}
+    onChange={(e) => updateField("peer2TotalAssets", e.target.value)}
+    className={inputClass}
+  />
+</label>
               <label className="font-bold">
   Peer 3 Name
   <input
@@ -1671,6 +1829,15 @@ onChange={(event) =>
     className={inputClass}
   />
 </label>     
+
+<label className="font-bold">
+  Peer 3 Total Assets
+  <input
+    value={form.peer3TotalAssets}
+    onChange={(e) => updateField("peer3TotalAssets", e.target.value)}
+    className={inputClass}
+  />
+</label>
               <div className="mt-6 border-t border-slate-700 pt-6 md:col-span-2">
   <h2 className="text-2xl font-black text-green-400">
     Company Overview
@@ -1841,7 +2008,7 @@ onChange={(event) =>
 
           
 
-          <div className="flex items-end gap-3 md:col-span-2">
+          <div className="flex items-end gap-3 max-sm:flex-col md:col-span-2">
             <button
               type="submit"
               disabled={saving}
@@ -1858,7 +2025,7 @@ onChange={(event) =>
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="rounded-xl border border-slate-600 px-6 py-3 font-black"
+                className="rounded-xl border border-slate-600 px-6 py-3 font-black max-sm:min-h-12 max-sm:w-full"
               >
                 Cancel
               </button>
@@ -1873,7 +2040,7 @@ onChange={(event) =>
         </form>
 
         <section className="mt-10">
-          <h2 className="text-3xl font-black">
+          <h2 className="text-3xl font-black max-sm:text-2xl">
             Manage IPOs
           </h2>
 
@@ -1900,11 +2067,11 @@ onChange={(event) =>
                   </p>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3 max-sm:flex-col">
                   <button
                     type="button"
                     onClick={() => editIPO(ipo)}
-                    className="rounded-xl bg-yellow-500 px-5 py-3 font-black text-slate-950"
+                    className="rounded-xl bg-yellow-500 px-5 py-3 font-black text-slate-950 max-sm:min-h-12 max-sm:w-full"
                   >
                     Edit IPO
                   </button>
@@ -1914,7 +2081,7 @@ onChange={(event) =>
                     onClick={() =>
                       deleteIPO(ipo.name)
                     }
-                    className="rounded-xl bg-red-600 px-5 py-3 font-black text-white"
+                    className="rounded-xl bg-red-600 px-5 py-3 font-black text-white max-sm:min-h-12 max-sm:w-full"
                   >
                     Delete IPO
                   </button>

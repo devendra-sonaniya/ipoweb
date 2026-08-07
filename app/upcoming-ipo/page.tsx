@@ -1,14 +1,12 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { connectToDatabase } from "@/lib/mongodb";
 
 type IPO = {
   name: string;
   type: string;
   status: string;
   priceBand: string;
-  issueSize: string;
+  gmp?: string;
   openDate: string;
   closeDate: string;
 };
@@ -21,81 +19,84 @@ function createSlug(name: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-export default function UpcomingIPOPage() {
-  const [ipos, setIpos] = useState<IPO[]>([]);
-  const [loading, setLoading] = useState(true);
+function typeBadgeColor(type: string) {
+  return type.toUpperCase() === "MAINBOARD"
+    ? "border-blue-700 bg-blue-950 text-blue-200"
+    : "border-yellow-500/30 bg-yellow-500/15 text-yellow-300";
+}
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch("/api/ipos", {
-          cache: "no-store",
-        });
+async function getUpcomingIPOs(): Promise<IPO[]> {
+  try {
+    const db = await connectToDatabase();
 
-        const data = await res.json();
+    return await db
+      .collection<IPO>("ipos")
+      .find(
+        { status: "UPCOMING" },
+        {
+          projection: {
+            _id: 0,
+            name: 1,
+            type: 1,
+            status: 1,
+            openDate: 1,
+            closeDate: 1,
+            priceBand: 1,
+            gmp: 1,
+          },
+        }
+      )
+      .sort({ _id: -1 })
+      .toArray();
+  } catch (error) {
+    console.error("Unable to load upcoming IPOs.", error);
+    return [];
+  }
+}
 
-        const list = Array.isArray(data) ? data : [];
-
-        setIpos(
-          list.filter(
-            (ipo: IPO) =>
-              ipo.status?.toUpperCase() === "UPCOMING"
-          )
-        );
-      } catch {
-        setIpos([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    load();
-  }, []);
+export default async function UpcomingIPOPage() {
+  const ipos = await getUpcomingIPOs();
 
   return (
-    <main className="min-h-screen bg-slate-950 px-5 py-12 text-white">
+    <main className="min-h-screen bg-slate-950 px-5 py-12 text-white max-sm:px-4 max-sm:py-8">
       <div className="mx-auto max-w-[1200px]">
-
         <Link href="/" className="font-bold text-green-400">
           ← Back to Home
         </Link>
 
-        <h1 className="mt-6 text-4xl font-black">
+        <h1 className="mt-6 text-4xl font-black max-sm:text-3xl">
           Upcoming <span className="text-green-400">IPO</span>
         </h1>
 
-        <p className="mt-3 text-slate-400">
-          IPOs expected to open soon.
-        </p>
+        <p className="mt-3 text-slate-400">IPOs expected to open soon.</p>
 
-        {loading ? (
-          <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center">
-            Loading Upcoming IPOs...
-          </div>
-        ) : ipos.length === 0 ? (
+        {ipos.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center text-slate-400">
             No Upcoming IPOs available right now.
           </div>
         ) : (
           <div className="mt-8 overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
-
-            <div className="overflow-x-auto">
-
+            <div className="mobile-table-scroll overflow-x-auto">
               <table className="w-full min-w-[800px]">
-
                 <thead className="bg-slate-950">
                   <tr className="border-b border-slate-700">
                     <th className="px-6 py-5 text-left text-xs font-black uppercase text-slate-500">
-                      IPO NAME
+                      IPO Name
                     </th>
                     <th className="px-6 py-5 text-left text-xs font-black uppercase text-slate-500">
-                      DATE
+                      Type
                     </th>
                     <th className="px-6 py-5 text-left text-xs font-black uppercase text-slate-500">
-                      ISSUE SIZE
+                      Open Date
                     </th>
                     <th className="px-6 py-5 text-left text-xs font-black uppercase text-slate-500">
-                      PRICE BAND
+                      Close Date
+                    </th>
+                    <th className="px-6 py-5 text-left text-xs font-black uppercase text-slate-500">
+                      Price Band
+                    </th>
+                    <th className="px-6 py-5 text-left text-xs font-black uppercase text-slate-500">
+                      GMP
                     </th>
                   </tr>
                 </thead>
@@ -104,39 +105,42 @@ export default function UpcomingIPOPage() {
                   {ipos.map((ipo) => (
                     <tr
                       key={ipo.name}
-                      onClick={() => {
-                        window.location.href = `/ipo/${createSlug(ipo.name)}`;
-                      }}
-                      className="cursor-pointer border-b border-slate-800 transition hover:bg-slate-800/70"
+                      className="border-b border-slate-800 transition hover:bg-slate-800/70"
                     >
                       <td className="px-6 py-6 font-black">
-                        {ipo.name}
+                        <Link
+                          href={`/ipo/${createSlug(ipo.name)}`}
+                          className="transition hover:text-green-400"
+                        >
+                          {ipo.name}
+                        </Link>
                       </td>
-
+                      <td className="px-6 py-6 whitespace-nowrap">
+                        <span
+                          className={`rounded-full border px-3 py-2 text-xs font-black ${typeBadgeColor(ipo.type)}`}
+                        >
+                          {ipo.type}
+                        </span>
+                      </td>
                       <td className="px-6 py-6 font-bold whitespace-nowrap text-green-400">
-                        {ipo.openDate && ipo.closeDate
-                          ? `${ipo.openDate} - ${ipo.closeDate}`
-                          : "Date TBA"}
+                        {ipo.openDate || "-"}
                       </td>
-
-                      <td className="px-6 py-6 font-bold whitespace-nowrap">
-                        {ipo.issueSize || "--"}
+                      <td className="px-6 py-6 font-bold whitespace-nowrap text-green-400">
+                        {ipo.closeDate || "-"}
                       </td>
-
                       <td className="px-6 py-6 font-bold whitespace-nowrap">
-                        {ipo.priceBand || "--"}
+                        {ipo.priceBand || "-"}
+                      </td>
+                      <td className="px-6 py-6 font-bold whitespace-nowrap">
+                        {ipo.gmp || "-"}
                       </td>
                     </tr>
                   ))}
                 </tbody>
-
               </table>
-
             </div>
-
           </div>
         )}
-
       </div>
     </main>
   );

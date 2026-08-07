@@ -1,15 +1,24 @@
 import { getRegistrarLink } from "@/lib/registrarLinks";
 
 export type AllotmentButtonIPO = {
+  openDate?: string;
   closeDate?: string;
   allotmentDate?: string;
   registrar?: string;
+  growwIPOUrl?: string;
 };
 
 export type AllotmentButtonState =
   | { kind: "hidden" }
   | { kind: "soon" }
   | { kind: "available"; url: string };
+
+export type HomeTableCTAState =
+  | { kind: "hidden" }
+  | { kind: "soon" }
+  | { kind: "apply"; url?: string }
+  | { kind: "apply-soon" }
+  | { kind: "status"; url?: string };
 
 const monthIndexes: Record<string, number> = {
   JAN: 0,
@@ -75,4 +84,41 @@ export function getAllotmentButtonState(
   return registrarUrl === "#"
     ? { kind: "soon" }
     : { kind: "available", url: registrarUrl };
+}
+
+export function getHomeTableCTAState(
+  ipo: AllotmentButtonIPO
+): HomeTableCTAState {
+  const today = todayAtMidnight();
+  const openDate = parseIPODate(ipo.openDate);
+  const closeDate = parseIPODate(ipo.closeDate);
+
+  if (openDate && today < openDate) {
+    return { kind: "apply-soon" };
+  }
+
+  if (openDate && closeDate && today >= openDate && today <= closeDate) {
+    const growwIPOUrl = ipo.growwIPOUrl?.trim();
+
+    return { kind: "apply", url: growwIPOUrl || undefined };
+  }
+
+  if (closeDate && today > closeDate) {
+    const allotmentDate = parseIPODate(ipo.allotmentDate);
+
+    if (!allotmentDate || today < allotmentDate) {
+      return { kind: "soon" };
+    }
+
+    const registrarUrl = ipo.registrar?.trim()
+      ? getRegistrarLink(ipo.registrar)
+      : undefined;
+
+    return {
+      kind: "status",
+      url: registrarUrl === "#" ? undefined : registrarUrl,
+    };
+  }
+
+  return { kind: "hidden" };
 }

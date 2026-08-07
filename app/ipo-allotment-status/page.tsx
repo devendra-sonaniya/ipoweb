@@ -42,9 +42,9 @@ export default function IPOAllotmentStatusPage() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-10 max-sm:px-4 max-sm:py-8">
 
-        <h1 className="text-4xl font-black text-green-400">
+        <h1 className="text-4xl font-black text-green-400 max-sm:text-3xl">
           IPO Allotment Status
         </h1>
 
@@ -53,7 +53,7 @@ export default function IPOAllotmentStatusPage() {
           registrar links and listing schedule.
         </p>
 
-        <div className="mt-8 overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="mobile-table-scroll mt-8 overflow-x-auto rounded-2xl border border-slate-800">
           <table className="w-full text-left">
             <thead className="bg-slate-900">
               <tr>
