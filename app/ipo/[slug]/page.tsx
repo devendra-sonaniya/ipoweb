@@ -1100,8 +1100,8 @@ export default async function IPOPage({ params }: Props) {
 
           <div className="mt-10 grid gap-5 md:grid-cols-2">
             {[
-              ["Company Overview", ipo.overview],
-              ["Financial Performance", ipo.financials],
+              ["Company Overview", ipo.companyOverview || ipo.overview],
+              ["Business Model", ipo.businessModel],
               ["Strengths", ipo.strengths],
               ["Risks", ipo.risks],
             ].map(([title, content]) => (

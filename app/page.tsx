@@ -79,6 +79,60 @@ function badgeColor(value: string) {
   return "bg-yellow-500/15 text-yellow-300 border-yellow-500/30";
 }
 
+function MobileIPOCTA({ ipo }: { ipo: IPO }) {
+  const state = getHomeTableCTAState(ipo);
+  const baseClass =
+    "inline-flex min-h-0 w-fit items-center rounded-md px-2.5 py-1.5 text-[11px] font-black leading-none";
+
+  if (state.kind === "apply" && state.url) {
+    return (
+      <a
+        href={state.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${baseClass} bg-green-500 text-slate-950`}
+      >
+        Apply IPO
+      </a>
+    );
+  }
+
+  if (state.kind === "apply") {
+    return <span className={`${baseClass} bg-green-500/60 text-slate-950`}>Apply IPO</span>;
+  }
+
+  if (state.kind === "apply-soon") {
+    return <span className={`${baseClass} bg-green-500/60 text-slate-950`}>Apply Soon</span>;
+  }
+
+  if (state.kind === "status" && state.url) {
+    return (
+      <a
+        href={state.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${baseClass} bg-green-500 text-slate-950`}
+      >
+        Allotment Status
+      </a>
+    );
+  }
+
+  if (state.kind === "status") {
+    return <span className={`${baseClass} bg-green-500/60 text-slate-950`}>Allotment Status</span>;
+  }
+
+  if (state.kind === "soon") {
+    return <span className={`${baseClass} bg-yellow-400 text-black`}>Allotment Soon</span>;
+  }
+
+  return (
+    <span className={`${baseClass} border ${badgeColor(ipo.status)}`}>
+      {ipo.status || "Status Pending"}
+    </span>
+  );
+}
+
 const homeWebPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
@@ -657,7 +711,70 @@ return (
 
       ) : (
 
-        <div className="mobile-table-shell overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
+        <>
+          <div className="grid min-w-0 gap-3 md:hidden">
+            {filtered.map((ipo) => (
+              <article
+                key={ipo.name}
+                data-mobile-ipo-card
+                className="min-w-0 rounded-xl border border-slate-800 bg-slate-900 p-4"
+              >
+                <div className="flex min-w-0 items-start gap-2.5">
+                  <Link
+                    href={`/ipo/${createSlug(ipo.name)}`}
+                    className="min-w-0 flex-1 break-words text-base font-black leading-snug text-white"
+                  >
+                    {ipo.name}
+                  </Link>
+                  <span
+                    className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-black ${badgeColor(ipo.type)}`}
+                  >
+                    {ipo.type}
+                  </span>
+                </div>
+
+                <div className="mt-2.5">
+                  <MobileIPOCTA ipo={ipo} />
+                </div>
+
+                <div className="mt-3 grid min-w-0 grid-cols-2 gap-2 rounded-lg bg-slate-950/70 p-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Price Band</p>
+                    <p className="mt-1 break-words text-sm font-bold text-white">{ipo.priceBand || "--"}</p>
+                  </div>
+                  <div className="min-w-0 text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Est. Gain</p>
+                    <p className="mt-1 break-words text-sm font-black text-green-400">{ipo.listingGain || "--"}</p>
+                  </div>
+                  <div className="min-w-0 border-t border-slate-800 pt-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">GMP</p>
+                    <p className="mt-1 break-words text-sm font-black text-green-400">{ipo.gmp || "--"}</p>
+                  </div>
+                  <div className="min-w-0 border-t border-slate-800 pt-2 text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Subscription</p>
+                    <p className="mt-1 break-words text-sm font-bold text-white">{ipo.subscription || "--"}</p>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid min-w-0 grid-cols-3 divide-x divide-slate-800 border-t border-slate-800 pt-3 text-center">
+                  {[
+                    ["Open", ipo.openDate],
+                    ["Close", ipo.closeDate],
+                    ["Listing", ipo.listingDate],
+                  ].map(([label, value]) => (
+                    <div key={label} className="min-w-0 px-1.5 first:pl-0 last:pr-0">
+                      <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
+                      <p className="mt-1 break-words text-[11px] font-semibold leading-tight text-slate-300">
+                        {value || "--"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+
+        <div className="mobile-table-shell hidden overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl md:block">
 
           <p className="border-b border-slate-800 px-4 py-2 text-xs font-bold text-slate-400 lg:hidden" aria-hidden="true">
             Swipe horizontally to view all IPO details →
@@ -871,6 +988,8 @@ return (
 </div>
 
 </div>
+
+        </>
 
 )}
 

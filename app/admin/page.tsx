@@ -2006,7 +2006,17 @@ onChange={(event) =>
             />
           </label>
 
-          
+          <label className="font-bold md:col-span-2">
+            Risks
+            <textarea
+              value={form.risks}
+              onChange={(event) =>
+                updateField("risks", event.target.value)
+              }
+              rows={5}
+              className={inputClass}
+            />
+          </label>
 
           <div className="flex items-end gap-3 max-sm:flex-col md:col-span-2">
             <button
