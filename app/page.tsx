@@ -36,6 +36,24 @@ type IPO = AllotmentButtonIPO & {
   registrar?: string;
 };
 
+const primaryNavigation = [
+  { href: "/", label: "Home" },
+  { href: "/gmp", label: "IPO GMP" },
+  { href: "/mainboard-ipo", label: "Mainboard IPO" },
+  { href: "/sme-ipo", label: "SME IPO" },
+  { href: "/upcoming-ipo", label: "Upcoming IPO" },
+  { href: "/allotment-status", label: "Allotment Status", accent: "yellow" },
+] as const;
+
+const hamburgerNavigation = [
+  { href: "/allotment-status", label: "IPO Allotment Status", icon: "📋", accent: "yellow" },
+  { href: "/ipo-calendar", label: "IPO Calendar", icon: "📅" },
+  { href: "/listed-ipo-performance", label: "Listed IPO Performance", icon: "📈" },
+  { href: "/ipo-faq", label: "FAQs", icon: "❓" },
+] as const;
+
+const DEFAULT_IPO_DISPLAY_LIMIT = 15;
+
 const subscribeToTheme = (onStoreChange: () => void) => {
   window.addEventListener("ipoweb-theme-change", onStoreChange);
   return () => window.removeEventListener("ipoweb-theme-change", onStoreChange);
@@ -236,9 +254,9 @@ export default function Home() {
 
   },[]);
 
-  const filtered=useMemo(()=>{
+  const matchingIPOs=useMemo(()=>{
 
-    const key=search.toLowerCase();
+    const key=search.trim().toLowerCase();
 
     return ipos.filter((ipo)=>
 
@@ -251,6 +269,11 @@ export default function Home() {
     );
 
   },[ipos,search]);
+
+  const displayedIPOs=useMemo(
+    () => search.trim() ? matchingIPOs : matchingIPOs.slice(0, DEFAULT_IPO_DISPLAY_LIMIT),
+    [matchingIPOs, search]
+  );
 return (
   <main className="min-h-screen bg-slate-950 text-white">
     <script
@@ -279,37 +302,20 @@ return (
   {menuOpen && (
     <div className="absolute left-0 top-full mt-2 w-64 rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-2xl max-lg:hidden">
 
-      <Link
-        href="/allotment-status"
-        onClick={()=>setMenuOpen(false)}
-        className="block rounded-lg px-3 py-3 font-bold text-yellow-400 transition hover:bg-slate-800 hover:text-yellow-300"
-      >
-        📋 IPO Allotment Status
-      </Link>
-
-      <Link
-        href="/ipo-calendar"
-        onClick={()=>setMenuOpen(false)}
-        className="block rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
-      >
-        📅 IPO Calendar
-      </Link>
-
-      <Link
-        href="/listed-ipo-performance"
-        onClick={()=>setMenuOpen(false)}
-        className="block rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
-      >
-        📈 Listed IPO Performance
-      </Link>
-
-      <Link
-        href="/ipo-faq"
-        onClick={()=>setMenuOpen(false)}
-        className="block rounded-lg px-3 py-3 font-bold text-white transition hover:bg-slate-800"
-      >
-        ❓ FAQs
-      </Link>
+      {hamburgerNavigation.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          onClick={()=>setMenuOpen(false)}
+          className={`block rounded-lg px-3 py-3 font-bold transition hover:bg-slate-800 ${
+            "accent" in item && item.accent === "yellow"
+              ? "text-yellow-400 hover:text-yellow-300"
+              : "text-white"
+          }`}
+        >
+          {item.icon} {item.label}
+        </Link>
+      ))}
 
       <div className="mt-2 border-t border-slate-800 pt-2">
         <button
@@ -348,29 +354,21 @@ return (
 
     <nav className="hidden items-center gap-6 font-bold text-white lg:flex">
 
-      <Link href="/" className="hover:text-green-400">
-        Home
-      </Link>
-
-      <Link href="/gmp" className="hover:text-green-400">
-        IPO GMP
-      </Link>
-
-      <Link href="/mainboard-ipo" className="hover:text-green-400">
-        Mainboard <span className="text-sky-400">IPO</span>
-      </Link>
-
-      <Link href="/sme-ipo" className="hover:text-green-400">
-        SME IPO
-      </Link>
-
-      <Link href="/upcoming-ipo" className="hover:text-green-400">
-        Upcoming IPO
-      </Link>
-
-      <Link href="/allotment-status" className="text-yellow-400 hover:text-yellow-300">
-        Allotment Status
-      </Link>
+      {primaryNavigation.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={
+            "accent" in item && item.accent === "yellow"
+              ? "text-yellow-400 hover:text-yellow-300"
+              : "hover:text-green-400"
+          }
+        >
+          {item.href === "/mainboard-ipo" ? (
+            <>Mainboard <span className="text-sky-400">IPO</span></>
+          ) : item.label}
+        </Link>
+      ))}
 
     </nav>
 
@@ -567,7 +565,7 @@ return (
 
   {/* MOBILE/EXTRA MENU */}
   {menuOpen && (
-    <div className="mobile-drawer mobile-safe-area border-t border-slate-800 bg-slate-950 px-5 py-5 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:top-[73px] max-lg:overflow-y-auto lg:static">
+    <div className="mobile-drawer mobile-safe-area border-t border-slate-800 bg-slate-950 px-5 py-5 max-lg:fixed max-lg:inset-x-0 max-lg:top-[73px] max-lg:z-50 max-lg:h-[calc(100dvh-73px)] max-lg:overflow-y-auto lg:static">
 
       <div className="mb-4 md:hidden">
         <div className="relative">
@@ -593,9 +591,9 @@ return (
             </button>
           )}
         </div>
-        {search && filtered.length > 0 && (
+        {search && matchingIPOs.length > 0 && (
           <div className="mt-2 overflow-hidden rounded-xl border border-slate-700 bg-slate-900" aria-label="IPO search suggestions">
-            {filtered.slice(0, 5).map((ipo) => (
+            {matchingIPOs.slice(0, 5).map((ipo) => (
               <button
                 key={ipo.name}
                 type="button"
@@ -612,46 +610,52 @@ return (
         )}
       </div>
 
-      <nav className="flex flex-col gap-4 font-bold text-white lg:hidden">
+      <nav aria-label="Mobile navigation" className="font-bold text-white lg:hidden">
+        <div className="flex flex-col gap-1">
+          {primaryNavigation.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={()=>setMenuOpen(false)}
+              className={`flex items-center rounded-lg px-3 py-2 transition hover:bg-slate-900 ${
+                "accent" in item && item.accent === "yellow"
+                  ? "text-yellow-400 hover:text-yellow-300"
+                  : "hover:text-green-400"
+              }`}
+            >
+              {item.href === "/mainboard-ipo" ? (
+                <>Mainboard <span className="ml-1 text-sky-400">IPO</span></>
+              ) : item.label}
+            </Link>
+          ))}
+        </div>
 
-        <Link href="/" onClick={()=>setMenuOpen(false)} className="hover:text-green-400">
-          Home
-        </Link>
+        <div className="mt-3 border-t border-slate-800 pt-3">
+          {hamburgerNavigation
+            .filter((item) => !primaryNavigation.some((primary) => primary.href === item.href))
+            .map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={()=>setMenuOpen(false)}
+                className="flex items-center gap-2 rounded-lg px-3 py-2 transition hover:bg-slate-900 hover:text-green-400"
+              >
+                <span aria-hidden="true">{item.icon}</span>
+                {item.label}
+              </Link>
+            ))}
+        </div>
 
-        <Link href="/gmp" onClick={()=>setMenuOpen(false)} className="hover:text-green-400">
-          IPO GMP
-        </Link>
-
-        <Link href="/mainboard-ipo" onClick={()=>setMenuOpen(false)} className="hover:text-green-400">
-          Mainboard <span className="text-sky-400">IPO</span>
-        </Link>
-
-        <Link href="/sme-ipo" onClick={()=>setMenuOpen(false)} className="hover:text-green-400">
-          SME IPO
-        </Link>
-
-        <Link href="/upcoming-ipo" onClick={()=>setMenuOpen(false)} className="hover:text-green-400">
-          Upcoming IPO
-        </Link>
-
-        <Link href="/allotment-status" onClick={()=>setMenuOpen(false)} className="text-yellow-400 hover:text-yellow-300">
-          Allotment Status
-        </Link>
-
-<Link
-  href="/ipo-faq"
-  onClick={() => setMenuOpen(false)}
-  className="hover:text-green-400"
->
-  FAQs
-</Link>
-        <Link
-          href="/apply-ipo"
-          onClick={()=>setMenuOpen(false)}
-          className="mt-2 rounded-lg bg-green-500 px-5 py-3 text-center font-black text-slate-950"
-        >
-          Apply IPO
-        </Link>
+        <div className="mt-3 border-t border-slate-800 pt-3">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex w-full items-center justify-between rounded-lg px-3 py-2 transition hover:bg-slate-900"
+          >
+            <span>{darkMode ? "🌙 Dark Mode" : "☀️ Light Mode"}</span>
+            <span className="text-sm text-slate-400">{darkMode ? "ON" : "OFF"}</span>
+          </button>
+        </div>
 
       </nav>
 
@@ -706,7 +710,7 @@ return (
           {loadError}
         </div>
 
-      ) : filtered.length === 0 ? (
+      ) : displayedIPOs.length === 0 ? (
 
         <div className="rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center text-slate-400">
           {ipos.length === 0 ? "No IPOs are available right now." : "No IPOs match your search."}
@@ -716,7 +720,7 @@ return (
 
         <>
           <div className="grid min-w-0 gap-3 md:hidden">
-            {filtered.map((ipo) => (
+            {displayedIPOs.map((ipo) => (
               <article
                 key={ipo.name}
                 data-mobile-ipo-card
@@ -847,7 +851,7 @@ return (
 
               <tbody>
 
-                {filtered.map((ipo) => {
+                {displayedIPOs.map((ipo) => {
                   const tableCTA = getHomeTableCTAState(ipo);
 
                   return (

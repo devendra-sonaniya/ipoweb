@@ -103,8 +103,10 @@ body {
 
   .mobile-drawer {
     animation: mobile-drawer-in 180ms ease-out;
+    height: calc(100dvh - 73px);
     overscroll-behavior: contain;
     padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+    z-index: 50;
   }
 
   .mobile-drawer :is(a, button) {
