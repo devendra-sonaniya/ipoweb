@@ -18,6 +18,7 @@ import {
   type AllotmentButtonIPO,
 } from "@/lib/allotmentButtonState";
 import { HomepageFAQ } from "./components/IPOFAQ";
+import { GrowwAdBanner } from "./components/GrowwAdBanner";
 
 type IPO = AllotmentButtonIPO & {
   name: string;
@@ -680,6 +681,8 @@ return (
           Click any row to open complete IPO Dashboard.
 
         </p>
+
+        <GrowwAdBanner />
 
       </div>
 
