@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import MobileEnhancements from "./components/MobileEnhancements";
@@ -18,6 +19,8 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 const homeTitle =
   "IPOWEB – IPO GMP, Upcoming IPOs, Mainboard IPO, SME IPO & IPO Calendar";
@@ -91,6 +94,7 @@ export default function RootLayout({
         {children}
         <MobileEnhancements />
       </body>
+      {gaMeasurementId && <GoogleAnalytics gaId={gaMeasurementId} />}
     </html>
   );
 }
