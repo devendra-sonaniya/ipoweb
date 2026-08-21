@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 type IPO = {
   name: string;
+  slug?: string;
   gmp: string;
   priceBand: string;
   listingGain: string;
@@ -90,7 +91,7 @@ export default function GMPPage() {
                   {ipos.map((ipo) => (
                     <Link
                       key={ipo.name}
-                      href={`/ipo/${createSlug(ipo.name)}`}
+                      href={`/ipo/${ipo.slug || createSlug(ipo.name)}`}
                       className="contents"
                     >
                       <tr className="cursor-pointer border-b border-slate-800 transition hover:bg-slate-800/70">

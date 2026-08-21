@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { connectToDatabase } from "@/lib/mongodb";
+import { getIPOsCollection } from "@/lib/ipoRepository";
+import { formatIPODate } from "@/lib/formatIPODate";
 
 type IPO = {
   name: string;
+  slug: string;
   type: string;
   status: string;
   priceBand: string;
@@ -27,16 +29,16 @@ function typeBadgeColor(type: string) {
 
 async function getUpcomingIPOs(): Promise<IPO[]> {
   try {
-    const db = await connectToDatabase();
+    const collection = await getIPOsCollection();
 
-    return await db
-      .collection<IPO>("ipos")
+    return await collection
       .find(
         { status: "UPCOMING" },
         {
           projection: {
             _id: 0,
             name: 1,
+            slug: 1,
             type: 1,
             status: 1,
             openDate: 1,
@@ -47,7 +49,7 @@ async function getUpcomingIPOs(): Promise<IPO[]> {
         }
       )
       .sort({ _id: -1 })
-      .toArray();
+      .toArray() as unknown as IPO[];
   } catch (error) {
     console.error("Unable to load upcoming IPOs.", error);
     return [];
@@ -109,7 +111,7 @@ export default async function UpcomingIPOPage() {
                     >
                       <td className="px-6 py-6 font-black">
                         <Link
-                          href={`/ipo/${createSlug(ipo.name)}`}
+                          href={`/ipo/${ipo.slug || createSlug(ipo.name)}`}
                           className="transition hover:text-green-400"
                         >
                           {ipo.name}
@@ -123,10 +125,10 @@ export default async function UpcomingIPOPage() {
                         </span>
                       </td>
                       <td className="px-6 py-6 font-bold whitespace-nowrap text-green-400">
-                        {ipo.openDate || "-"}
+                        {formatIPODate(ipo.openDate)}
                       </td>
                       <td className="px-6 py-6 font-bold whitespace-nowrap text-green-400">
-                        {ipo.closeDate || "-"}
+                        {formatIPODate(ipo.closeDate)}
                       </td>
                       <td className="px-6 py-6 font-bold whitespace-nowrap">
                         {ipo.priceBand || "-"}

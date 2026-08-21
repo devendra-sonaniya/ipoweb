@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { formatIPODate } from "@/lib/formatIPODate";
 
 type IPO = {
   name: string;
+  slug?: string;
   type: string;
   status: string;
   priceBand: string;
@@ -117,17 +119,18 @@ export default function SMEIPOPage() {
                   {ipos.map((ipo) => (
                     <tr
                       key={ipo.name}
-                      onClick={() => {
-                        window.location.href = `/ipo/${createSlug(ipo.name)}`;
-                      }}
                       className="cursor-pointer border-b border-slate-800 transition hover:bg-slate-800/70"
                     >
-                      <td className="px-6 py-6 font-black">{ipo.name}</td>
+                      <td className="px-6 py-6 font-black">
+                        <Link href={`/ipo/${ipo.slug || createSlug(ipo.name)}`}>
+                          {ipo.name}
+                        </Link>
+                      </td>
                       <td className="px-6 py-6 text-xl font-black text-green-400">{ipo.gmp || "--"}</td>
                       <td className="px-6 py-6 font-bold text-green-400">{ipo.listingGain || "--"}</td>
                       <td className="px-6 py-6 font-bold whitespace-nowrap">{ipo.priceBand}</td>
-                      <td className="px-6 py-6 whitespace-nowrap">{ipo.openDate}</td>
-                      <td className="px-6 py-6 whitespace-nowrap">{ipo.closeDate}</td>
+                      <td className="px-6 py-6 whitespace-nowrap">{formatIPODate(ipo.openDate)}</td>
+                      <td className="px-6 py-6 whitespace-nowrap">{formatIPODate(ipo.closeDate)}</td>
                       <td className="px-6 py-6">
                         <span className={`rounded-full border px-3 py-2 text-xs font-black ${badgeColor(ipo.status)}`}>
                           {ipo.status}

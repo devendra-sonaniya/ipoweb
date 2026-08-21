@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getRegistrarLink } from "@/lib/registrarLinks";
+import { formatIPODate } from "@/lib/formatIPODate";
 
 type IPO = {
   name: string;
@@ -75,7 +76,7 @@ export default function IPOAllotmentStatusPage() {
                   </td>
 
                   <td className="px-5 py-4">
-                    {ipo.allotmentDate}
+                    {formatIPODate(ipo.allotmentDate)}
                   </td>
 
                   <td className="px-5 py-4">

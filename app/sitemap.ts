@@ -1,14 +1,6 @@
 import type { MetadataRoute } from "next";
-import { connectToDatabase } from "@/lib/mongodb";
+import { getIPOsCollection } from "@/lib/ipoRepository";
 import { absoluteUrl } from "@/lib/seo";
-
-function createSlug(name: string) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 const staticRoutes: Array<{
   path: string;
@@ -33,16 +25,21 @@ const staticRoutes: Array<{
 
 async function getIPOSitemapEntries(): Promise<MetadataRoute.Sitemap> {
   try {
-    const db = await connectToDatabase();
-    const ipos = await db
-      .collection<{ name: string }>("ipos")
-      .find({}, { projection: { _id: 0, name: 1 } })
+    const collection = await getIPOsCollection();
+    const ipos = await collection
+      .find(
+        { slug: { $type: "string", $ne: "" } },
+        { projection: { _id: 0, slug: 1, createdAt: 1, updatedAt: 1 } }
+      )
       .toArray();
 
     return ipos
-      .filter((ipo) => ipo.name)
+      .filter((ipo) => ipo.slug)
       .map((ipo) => ({
-        url: absoluteUrl(`/ipo/${createSlug(ipo.name)}`),
+        url: absoluteUrl(`/ipo/${ipo.slug}`),
+        ...(ipo.updatedAt || ipo.createdAt
+          ? { lastModified: ipo.updatedAt || ipo.createdAt }
+          : {}),
         changeFrequency: "daily" as const,
         priority: 0.8,
       }));

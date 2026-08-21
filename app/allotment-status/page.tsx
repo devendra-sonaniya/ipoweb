@@ -5,6 +5,7 @@ import {
   getAllotmentButtonState,
   type AllotmentButtonIPO,
 } from "@/lib/allotmentButtonState";
+import { formatIPODate } from "@/lib/formatIPODate";
 
 type IPO = AllotmentButtonIPO & {
   name: string;
@@ -151,7 +152,7 @@ export default function AllotmentStatusPage() {
                           {ipo.listingGain || "--"}
                         </td>
                         <td className="px-6 py-5 whitespace-nowrap text-slate-300">
-                          {ipo.listingDate || "--"}
+                          {formatIPODate(ipo.listingDate, "--")}
                         </td>
                         <td className="px-6 py-5">
                           {allotmentButton.kind === "available" ? (

@@ -1,5 +1,9 @@
 import Link from "next/link";
+import { notFound, permanentRedirect } from "next/navigation";
+import { getIPOBySlug } from "@/lib/ipoRepository";
 import FinancialChart from "./FinancialChart";
+import IPOFundamentalGuide from "./IPOFundamentalGuide";
+import { formatIPODate } from "@/lib/formatIPODate";
 type GMPHistoryItem = {
   date: string;
   value: string;
@@ -75,6 +79,11 @@ listingExchange: string;
   peRatio: string;
   pbRatio: string;
   industryPE: string;
+  roe: string;
+  roce: string;
+  ronw: string;
+  patMargin: string;
+  ebitdaMargin: string;
   debtToEquity: string;
   totalAssetsFY2024?: string;
   totalAssetsFY2025?: string;
@@ -95,6 +104,7 @@ peer1EPS: string;
 peer1PE: string;
 peer1MarketCap: string;
 peer1ROE: string;
+peer1RONW: string;
 peer1DebtEquity: string;
 
 peer2Name: string;
@@ -104,6 +114,7 @@ peer2EPS: string;
 peer2PE: string;
 peer2MarketCap: string;
 peer2ROE: string;
+peer2RONW: string;
 peer2DebtEquity: string;
 
 peer3Name: string;
@@ -113,6 +124,7 @@ peer3EPS: string;
 peer3PE: string;
 peer3MarketCap: string;
 peer3ROE: string;
+peer3RONW: string;
 peer3DebtEquity: string;
   anchorAllocation: string;
   anchorDetails: string;
@@ -120,6 +132,7 @@ peer3DebtEquity: string;
   patGrowth?: string;
   debtRisk?: string;
   valuation?: string;
+  businessRisk?: string;
   qibReservation: string;
   niiReservation: string;
   retailReservation: string;
@@ -132,6 +145,7 @@ peer3DebtEquity: string;
   companyOverview?: string;
   businessModel?: string;
   objectsOfIssue?: string;
+  lastUpdated?: string;
   gmpHistory?: GMPHistoryItem[];
 };
 
@@ -140,14 +154,6 @@ type Props = {
     slug: string;
   }>;
 };
-
-function createSlug(name: string) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 function getNumber(value: string) {
   const number = Number(value.replace(/[^\d.-]/g, ""));
@@ -170,53 +176,38 @@ function formatPercent(value: number) {
   return `${value.toFixed(1)}%`;
 }
 
-async function getIPOs(): Promise<IPO[]> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-    const response = await fetch(
-      `${baseUrl}/api/ipos`,
-      {
-        cache: "no-store",
-      }
-    );
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = await response.json();
-
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
+function getSignalValueColor(label: string, value?: string) {
+  if (label === "Revenue Growth" || label === "PAT Growth") {
+    return "text-green-400";
   }
+
+  const normalizedValue = value?.trim().toUpperCase();
+
+  if (normalizedValue === "HIGH" || normalizedValue === "EXPENSIVE") {
+    return "text-red-400";
+  }
+
+  if (normalizedValue === "MEDIUM" || normalizedValue === "FAIR") {
+    return "text-yellow-400";
+  }
+
+  if (normalizedValue === "LOW" || normalizedValue === "ATTRACTIVE") {
+    return "text-green-400";
+  }
+
+  return "text-white";
 }
 
 export default async function IPOPage({ params }: Props) {
   const { slug } = await params;
+  const lookup = await getIPOBySlug(slug);
 
-  const ipos = await getIPOs();
-
-  const ipo = ipos.find(
-    (item) => createSlug(item.name) === slug
-  );
-
-  if (!ipo) {
-    return (
-      <main className="min-h-screen bg-slate-950 p-10 text-white max-sm:p-4">
-        <h1 className="text-4xl font-black text-red-500 max-sm:text-3xl">
-          IPO Not Found
-        </h1>
-
-        <Link
-          href="/"
-          className="mt-8 inline-block text-green-400"
-        >
-          ← Back to Home
-        </Link>
-      </main>
-    );
+  if (!lookup) notFound();
+  if (lookup.shouldRedirect) {
+    permanentRedirect(`/ipo/${lookup.canonicalSlug}`);
   }
+
+  const ipo = lookup.ipo as unknown as IPO;
 
   const history = Array.isArray(ipo.gmpHistory)
     ? ipo.gmpHistory
@@ -279,7 +270,13 @@ export default async function IPOPage({ params }: Props) {
             </span>
           </div>
 
-          <h1 className="mt-6 break-words text-5xl font-black leading-tight max-md:text-4xl max-sm:text-3xl">
+          <h1 className={`mt-6 break-words text-5xl font-black leading-tight max-md:text-4xl max-sm:text-3xl ${
+            ipo.type.toUpperCase() === "MAINBOARD"
+              ? "text-sky-400"
+              : ipo.type.toUpperCase() === "SME"
+                ? "text-yellow-400"
+                : "text-white"
+          }`}>
             {ipo.name}
           </h1>
 
@@ -318,22 +315,22 @@ export default async function IPOPage({ params }: Props) {
 
       <div className="flex justify-between">
         <span>Open Date</span>
-        <span>{ipo.openDate || "-"}</span>
+        <span>{formatIPODate(ipo.openDate)}</span>
       </div>
 
       <div className="flex justify-between">
         <span>Close Date</span>
-        <span>{ipo.closeDate || "-"}</span>
+        <span>{formatIPODate(ipo.closeDate)}</span>
       </div>
 
       <div className="flex justify-between">
         <span>Allotment</span>
-        <span>{ipo.allotmentDate || "-"}</span>
+        <span>{formatIPODate(ipo.allotmentDate)}</span>
       </div>
 
       <div className="flex justify-between">
         <span>Listing Date</span>
-        <span>{ipo.listingDate || "-"}</span>
+        <span>{formatIPODate(ipo.listingDate)}</span>
       </div>
 
     </div>
@@ -464,7 +461,7 @@ export default async function IPOPage({ params }: Props) {
             IPO Date
           </td>
           <td className="px-5 py-4">
-            {ipo.openDate} - {ipo.closeDate}
+            {formatIPODate(ipo.openDate)} - {formatIPODate(ipo.closeDate)}
           </td>
         </tr>
 
@@ -491,7 +488,7 @@ export default async function IPOPage({ params }: Props) {
             Allotment Date
           </td>
           <td className="px-5 py-4">
-            {ipo.allotmentDate}
+            {formatIPODate(ipo.allotmentDate)}
           </td>
         </tr>
 
@@ -500,7 +497,7 @@ export default async function IPOPage({ params }: Props) {
             Listing Date
           </td>
           <td className="px-5 py-4">
-            {ipo.listingDate}
+            {formatIPODate(ipo.listingDate)}
           </td>
         </tr>
           <tr className="border-b border-slate-800">
@@ -511,15 +508,6 @@ export default async function IPOPage({ params }: Props) {
     {ipo.listingExchange || "-"}
   </td>
 </tr>
-        <tr className="border-b border-slate-800">
-          <td className="bg-slate-900 px-5 py-4 font-semibold">
-            Listing Exchange
-          </td>
-          <td className="px-5 py-4">
-            {ipo.listingExchange}
-          </td>
-        </tr>
-
         <tr className="border-b border-slate-800">
           <td className="bg-slate-900 px-5 py-4 font-semibold">
             DRHP
@@ -556,7 +544,31 @@ export default async function IPOPage({ params }: Props) {
     </table>
   </div>
 </section>
-            
+
+            {/* IPO Signal / Risk Data */}
+<section className="mt-8 rounded-3xl border border-slate-800 bg-slate-950 p-8 max-sm:rounded-2xl max-sm:p-4">
+  <h2 className="mb-6 text-3xl font-black text-green-400 max-sm:text-2xl">
+    IPO Signal / Risk Data
+  </h2>
+
+  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    {([
+      ["Revenue Growth", ipo.revenueGrowth],
+      ["PAT Growth", ipo.patGrowth],
+      ["Debt Risk", ipo.debtRisk],
+      ["Valuation", ipo.valuation],
+      ["Business Risk", ipo.businessRisk],
+    ] as const).map(([label, value]) => (
+      <div key={label} className="rounded-xl bg-slate-900 p-4">
+        <p className="text-sm text-slate-400">{label}</p>
+        <p className={`font-bold ${getSignalValueColor(label, value)}`}>
+          {value || "-"}
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
+
           <section className="mt-10 rounded-3xl border border-slate-800 bg-slate-950 p-7">
             <div className="flex flex-wrap justify-between gap-4">
               <div>
@@ -566,6 +578,10 @@ export default async function IPOPage({ params }: Props) {
 
                 <p className="mt-2 text-slate-400">
                   Date-wise grey market premium movement.
+                </p>
+
+                <p className="mt-2 text-sm text-slate-500">
+                  Last Update: {ipo.lastUpdated?.trim() || "Not available"}
                 </p>
               </div>
 
@@ -639,7 +655,7 @@ export default async function IPOPage({ params }: Props) {
                       />
 
                       <p className="mt-3 text-center text-xs text-slate-500">
-                        {item.date}
+                        {formatIPODate(item.date)}
                       </p>
                     </div>
                   );
@@ -875,39 +891,6 @@ export default async function IPOPage({ params }: Props) {
 </section>
 
 
-            {/* DRHP & RHP */}
-<section className="rounded-2xl border border-gray-800 bg-[#0f172a] p-6 mt-8">
-  <h2 className="text-2xl font-bold text-white mb-6">
-    IPO Documents
-  </h2>
-
-  <div className="flex flex-wrap gap-4">
-
-    {ipo.drhpLink && (
-  <a
-    href={ipo.drhpLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="rounded-xl bg-green-600 px-6 py-3 font-bold text-white hover:bg-green-700 transition"
-      >
-        📄 Download DRHP
-      </a>
-    )}
-
-    {ipo.rhpLink && (
-  <a
-    href={ipo.rhpLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="rounded-xl bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 transition"
-      >
-        📘 Download RHP
-      </a>
-    )}
-
-  </div>
-</section>
-  
            {/* Promoter Holding & Anchor Investors */}
 <section className="rounded-2xl border border-gray-800 bg-[#0f172a] p-6 mt-8">
   <h2 className="text-2xl font-bold text-white mb-6">
@@ -958,18 +941,43 @@ export default async function IPOPage({ params }: Props) {
   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 
     <div className="rounded-xl bg-gray-900 p-4">
-      <p className="text-gray-400 text-sm">Market Cap</p>
+      <p className="text-gray-400 text-sm">Market Cap (Post IPO)</p>
       <p className="text-white font-bold">{ipo.marketCapPostIPO}</p>
     </div>
 
     <div className="rounded-xl bg-gray-900 p-4">
-      <p className="text-gray-400 text-sm">Face Value</p>
-      <p className="text-white font-bold">{ipo.faceValue}</p>
+      <p className="text-gray-400 text-sm">ROE</p>
+      <p className="text-white font-bold">{ipo.roe}</p>
     </div>
 
     <div className="rounded-xl bg-gray-900 p-4">
-      <p className="text-gray-400 text-sm">Book Value</p>
-      <p className="text-white font-bold">{ipo.bookValue}</p>
+      <p className="text-gray-400 text-sm">ROCE</p>
+      <p className="text-white font-bold">{ipo.roce}</p>
+    </div>
+
+    <div className="rounded-xl bg-gray-900 p-4">
+      <p className="text-gray-400 text-sm">Debt / Equity</p>
+      <p className="text-white font-bold">{ipo.debtToEquity}</p>
+    </div>
+
+    <div className="rounded-xl bg-gray-900 p-4">
+      <p className="text-gray-400 text-sm">RONW</p>
+      <p className="text-white font-bold">{ipo.ronw}</p>
+    </div>
+
+    <div className="rounded-xl bg-gray-900 p-4">
+      <p className="text-gray-400 text-sm">PAT Margin</p>
+      <p className="text-white font-bold">{ipo.patMargin}</p>
+    </div>
+
+    <div className="rounded-xl bg-gray-900 p-4">
+      <p className="text-gray-400 text-sm">EBITDA Margin</p>
+      <p className="text-white font-bold">{ipo.ebitdaMargin}</p>
+    </div>
+
+    <div className="rounded-xl bg-gray-900 p-4">
+      <p className="text-gray-400 text-sm">Price to Book Value</p>
+      <p className="text-white font-bold">{ipo.pbRatio}</p>
     </div>
 
     <div className="rounded-xl bg-gray-900 p-4">
@@ -978,33 +986,13 @@ export default async function IPOPage({ params }: Props) {
     </div>
 
     <div className="rounded-xl bg-gray-900 p-4">
-      <p className="text-gray-400 text-sm">Diluted EPS</p>
-      <p className="text-white font-bold">{ipo.dilutedEPS}</p>
-    </div>
-
-    <div className="rounded-xl bg-gray-900 p-4">
       <p className="text-gray-400 text-sm">P/E Ratio</p>
       <p className="text-white font-bold">{ipo.peRatio}</p>
     </div>
 
     <div className="rounded-xl bg-gray-900 p-4">
-      <p className="text-gray-400 text-sm">P/B Ratio</p>
-      <p className="text-white font-bold">{ipo.pbRatio}</p>
-    </div>
-
-    <div className="rounded-xl bg-gray-900 p-4">
       <p className="text-gray-400 text-sm">Industry P/E</p>
       <p className="text-white font-bold">{ipo.industryPE}</p>
-    </div>
-
-    <div className="rounded-xl bg-gray-900 p-4">
-      <p className="text-gray-400 text-sm">Debt to Equity</p>
-      <p className="text-white font-bold">{ipo.debtToEquity}</p>
-    </div>
-
-    <div className="rounded-xl bg-gray-900 p-4">
-      <p className="text-gray-400 text-sm">IPO Valuation</p>
-      <p className="text-white font-bold">{ipo.ipoValuation}</p>
     </div>
 
   </div>
@@ -1020,45 +1008,18 @@ export default async function IPOPage({ params }: Props) {
     <table className="w-full min-w-[900px] border-collapse">
       <thead>
         <tr className="border-b border-gray-700">
-          <th className="py-3 px-4 text-left text-gray-300">Company</th>
+          <th className="py-3 px-4 text-left text-gray-300">Peer Name</th>
           <th className="py-3 px-4 text-center text-gray-300">Revenue</th>
           <th className="py-3 px-4 text-center text-gray-300">PAT</th>
           <th className="py-3 px-4 text-center text-gray-300">EPS</th>
           <th className="py-3 px-4 text-center text-gray-300">P/E</th>
-          <th className="py-3 px-4 text-center text-gray-300">Market Cap</th>
           <th className="py-3 px-4 text-center text-gray-300">ROE</th>
-          <th className="py-3 px-4 text-center text-gray-300">Debt/Equity</th>
+          <th className="py-3 px-4 text-center text-gray-300">RONW</th>
+          <th className="py-3 px-4 text-center text-gray-300">Debt / Equity</th>
         </tr>
       </thead>
 
       <tbody>
-
-        <tr className="border-b border-gray-800 bg-green-950/30">
-          <td className="py-3 px-4 font-semibold text-green-400">
-            {ipo.name}
-          </td>
-          <td className="py-3 px-4 text-center">
-            {ipo.peerRevenue}
-          </td>
-          <td className="py-3 px-4 text-center">
-            {ipo.peerPAT}
-          </td>
-          <td className="py-3 px-4 text-center">
-            {ipo.peerEPS}
-          </td>
-          <td className="py-3 px-4 text-center">
-            {ipo.peerPE}
-          </td>
-          <td className="py-3 px-4 text-center">
-            {ipo.peerMarketCap}
-          </td>
-          <td className="py-3 px-4 text-center">
-            {ipo.peerROE}
-          </td>
-          <td className="py-3 px-4 text-center">
-            {ipo.peerDebtEquity}
-          </td>
-        </tr>
 
         <tr className="border-b border-gray-800">
           <td className="py-3 px-4">{ipo.peer1Name}</td>
@@ -1066,8 +1027,8 @@ export default async function IPOPage({ params }: Props) {
           <td className="py-3 px-4 text-center">{ipo.peer1PAT}</td>
           <td className="py-3 px-4 text-center">{ipo.peer1EPS}</td>
           <td className="py-3 px-4 text-center">{ipo.peer1PE}</td>
-          <td className="py-3 px-4 text-center">{ipo.peer1MarketCap}</td>
           <td className="py-3 px-4 text-center">{ipo.peer1ROE}</td>
+          <td className="py-3 px-4 text-center">{ipo.peer1RONW}</td>
           <td className="py-3 px-4 text-center">{ipo.peer1DebtEquity}</td>
         </tr>
 
@@ -1077,8 +1038,8 @@ export default async function IPOPage({ params }: Props) {
           <td className="py-3 px-4 text-center">{ipo.peer2PAT}</td>
           <td className="py-3 px-4 text-center">{ipo.peer2EPS}</td>
           <td className="py-3 px-4 text-center">{ipo.peer2PE}</td>
-          <td className="py-3 px-4 text-center">{ipo.peer2MarketCap}</td>
           <td className="py-3 px-4 text-center">{ipo.peer2ROE}</td>
+          <td className="py-3 px-4 text-center">{ipo.peer2RONW}</td>
           <td className="py-3 px-4 text-center">{ipo.peer2DebtEquity}</td>
         </tr>
 
@@ -1088,8 +1049,8 @@ export default async function IPOPage({ params }: Props) {
           <td className="py-3 px-4 text-center">{ipo.peer3PAT}</td>
           <td className="py-3 px-4 text-center">{ipo.peer3EPS}</td>
           <td className="py-3 px-4 text-center">{ipo.peer3PE}</td>
-          <td className="py-3 px-4 text-center">{ipo.peer3MarketCap}</td>
           <td className="py-3 px-4 text-center">{ipo.peer3ROE}</td>
+          <td className="py-3 px-4 text-center">{ipo.peer3RONW}</td>
           <td className="py-3 px-4 text-center">{ipo.peer3DebtEquity}</td>
         </tr>
 
@@ -1119,6 +1080,8 @@ export default async function IPOPage({ params }: Props) {
               </div>
             ))}
           </div>
+
+          <IPOFundamentalGuide />
         </div>
       </section>
       

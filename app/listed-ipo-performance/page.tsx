@@ -6,6 +6,7 @@ import {
   calculateListingGain,
   parseIPOAmount,
 } from "@/lib/listingPerformance";
+import { formatIPODate } from "@/lib/formatIPODate";
 
 type IPO = {
   name: string;
@@ -140,7 +141,7 @@ export default function ListedIPOPerformancePage() {
                             : `${listingGain >= 0 ? "+" : ""}${listingGain.toFixed(2)}%`}
                         </td>
                         <td className="whitespace-nowrap px-6 py-6 font-semibold">
-                          {ipo.listingDate || "--"}
+                          {formatIPODate(ipo.listingDate, "--")}
                         </td>
                       </tr>
                     );

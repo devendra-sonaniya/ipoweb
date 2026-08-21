@@ -35,7 +35,7 @@ const monthIndexes: Record<string, number> = {
   DEC: 11,
 };
 
-function parseIPODate(value?: string): Date | null {
+export function parseIPODate(value?: string): Date | null {
   const match = value
     ?.trim()
     .toUpperCase()
